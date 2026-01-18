@@ -21,13 +21,7 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
 
 
-        /**
-         * Gets a chess piece on the chessboard
-         *
-         * @param position The position to get the piece from
-         * @return Either the piece at the position, or null if no piece is at that
-         * position
-         */
+
         squares[position.getRow()-1][position.getColumn()-1] = piece;
     }
     public ChessPiece getPiece(ChessPosition position) {
