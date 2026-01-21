@@ -4,12 +4,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.List;
 
-/**
- * Represents a single chess piece
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessPiece {
 
     @Override
@@ -68,6 +62,16 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        ChessPiece piece = board.getPiece(myPosition);
+        ChessPosition endPosition;
+
+        if(piece.getPieceType() == PieceType.PAWN)
+        {
+
+            return List.of(new ChessMove(myPosition, endPosition,piece.getPieceType(),null));
+        }
         return List.of();
     }
 }
+
+
