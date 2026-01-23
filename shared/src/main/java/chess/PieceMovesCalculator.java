@@ -14,7 +14,7 @@ public class PieceMovesCalculator {
     private final ChessBoard board;
     private final ChessPiece piece;
     private final ChessGame.TeamColor team;
-    private boolean capturedPiece;
+    private boolean capturedPieceLastTurn;
     private final int[][] allMoves = {{0,1},{0,-1},//straight 0 1
             {1,1},{1,-1},{-1,-1},{-1,1},//diagonal 2 3 4 5
             {1,0},{-1,0},//sideways 6 7
@@ -31,20 +31,19 @@ public class PieceMovesCalculator {
     }
     private boolean isValidSquare(ChessPosition position)
     {
-        boolean sameTeam = false;
+        boolean valid = false;
         if((position.getRow() >= 1 && position.getRow() <= 8) &&
         (position.getColumn() >= 1 && position.getColumn() <= 8))
         {
-            if(capturedPiece)
-            {
-                capturedPiece = false;
-                return false;
+            valid = true;
+            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() == team) valid = false;
+            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() != team) {
+                valid = true;
+                capturedPieceLastTurn = true;
             }
-            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() == team) sameTeam = true;
-            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() != team) capturedPiece = true;
-            return !sameTeam;
+
         }
-        return false;
+        return valid;
     }
 
     public HashSet<ChessMove> getPossibleMoves() {
@@ -58,6 +57,7 @@ public class PieceMovesCalculator {
         int curRow = start.getRow();
         int curCol = start.getColumn();
         ChessPosition possiblePosition;
+        boolean invalidMove;
 
         switch(type)
         {
@@ -73,12 +73,21 @@ public class PieceMovesCalculator {
                 break;
             case QUEEN:
                 for (int[] moveDirection : moveDirections) {
-                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                            curCol + moveDirection[1]);
-                    while(isValidSquare(possiblePosition)) {
+                    invalidMove = false;
+                    while(!invalidMove)
+                    {
                         possiblePosition = new ChessPosition(curRow + moveDirection[0],
                                 curCol + moveDirection[1]);
-                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        if(!capturedPieceLastTurn) {
+                            if (isValidSquare(possiblePosition))
+                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                            else invalidMove = true;
+                        }
+                        else
+                        {
+                            invalidMove = true;
+                            capturedPieceLastTurn = false;
+                        }
                         curRow += moveDirection[0];
                         curCol += moveDirection[1];
                     }
@@ -88,12 +97,21 @@ public class PieceMovesCalculator {
                 break;
             case BISHOP:
                 for (int[] moveDirection : moveDirections) {
-                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                            curCol + moveDirection[1]);
-                    while(isValidSquare(possiblePosition)) {
+                    invalidMove = false;
+                    while(!invalidMove)
+                    {
                         possiblePosition = new ChessPosition(curRow + moveDirection[0],
                                 curCol + moveDirection[1]);
-                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        if(!capturedPieceLastTurn) {
+                            if (isValidSquare(possiblePosition))
+                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                            else invalidMove = true;
+                        }
+                        else
+                        {
+                            invalidMove = true;
+                            capturedPieceLastTurn = false;
+                        }
                         curRow += moveDirection[0];
                         curCol += moveDirection[1];
                     }
@@ -103,7 +121,7 @@ public class PieceMovesCalculator {
                 break;
             case KNIGHT:
                 for (int[] moveDirection : moveDirections) {
-                    capturedPiece = false;
+                    capturedPieceLastTurn = false;
                     possiblePosition = new ChessPosition(curRow + moveDirection[0],
                             curCol + moveDirection[1]);
                     if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
@@ -111,12 +129,21 @@ public class PieceMovesCalculator {
                 break;
             case ROOK:
                 for (int[] moveDirection : moveDirections) {
-                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                            curCol + moveDirection[1]);
-                    while(isValidSquare(possiblePosition)) {
+                    invalidMove = false;
+                    while(!invalidMove)
+                    {
                         possiblePosition = new ChessPosition(curRow + moveDirection[0],
                                 curCol + moveDirection[1]);
-                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        if(!capturedPieceLastTurn) {
+                            if (isValidSquare(possiblePosition))
+                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                            else invalidMove = true;
+                        }
+                        else
+                        {
+                            invalidMove = true;
+                            capturedPieceLastTurn = false;
+                        }
                         curRow += moveDirection[0];
                         curCol += moveDirection[1];
                     }
