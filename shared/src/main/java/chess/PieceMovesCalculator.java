@@ -1,8 +1,5 @@
 package chess;
-import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.ArrayList;
 
 /**
@@ -17,6 +14,7 @@ public class PieceMovesCalculator {
     private final ChessBoard board;
     private final ChessPiece piece;
     private final ChessGame.TeamColor team;
+    private boolean capturedPiece;
     private final int[][] allMoves = {{0,1},{0,-1},//straight 0 1
             {1,1},{1,-1},{-1,-1},{-1,1},//diagonal 2 3 4 5
             {1,0},{-1,0},//sideways 6 7
@@ -33,10 +31,17 @@ public class PieceMovesCalculator {
     }
     private boolean isValidSquare(ChessPosition position)
     {
+        boolean sameTeam = false;
         if((position.getRow() >= 1 && position.getRow() <= 8) &&
         (position.getColumn() >= 1 && position.getColumn() <= 8))
         {
-            boolean sameTeam = board.getPiece(position) != null && board.getPiece(position).getTeamColor() == team;
+            if(capturedPiece)
+            {
+                capturedPiece = false;
+                return false;
+            }
+            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() == team) sameTeam = true;
+            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() != team) capturedPiece = true;
             return !sameTeam;
         }
         return false;
@@ -50,28 +55,77 @@ public class PieceMovesCalculator {
     public HashSet<ChessMove> calcPossibleMoves(ArrayList<int[]> moveDirections)
     {
         var possibleMoves = new HashSet<ChessMove>();
-        int startRow = start.getRow();
-        int startCol = start.getColumn();
-        for (int[] moveDirection : moveDirections) {
-            ChessPosition possiblePosition = new ChessPosition(startRow + moveDirection[0],
-                    startCol + moveDirection[1]);
-            if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
-        }
+        int curRow = start.getRow();
+        int curCol = start.getColumn();
+        ChessPosition possiblePosition;
+
         switch(type)
         {
             case PAWN:
 
                 break;
             case KING:
+                for (int[] moveDirection : moveDirections) {
+                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                            curCol + moveDirection[1]);
+                    if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
+                }
                 break;
             case QUEEN:
+                for (int[] moveDirection : moveDirections) {
+                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                            curCol + moveDirection[1]);
+                    while(isValidSquare(possiblePosition)) {
+                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                                curCol + moveDirection[1]);
+                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        curRow += moveDirection[0];
+                        curCol += moveDirection[1];
+                    }
+                    curRow = start.getRow();
+                    curCol = start.getColumn();
+                }
                 break;
             case BISHOP:
+                for (int[] moveDirection : moveDirections) {
+                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                            curCol + moveDirection[1]);
+                    while(isValidSquare(possiblePosition)) {
+                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                                curCol + moveDirection[1]);
+                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        curRow += moveDirection[0];
+                        curCol += moveDirection[1];
+                    }
+                    curRow = start.getRow();
+                    curCol = start.getColumn();
+                }
                 break;
             case KNIGHT:
+                for (int[] moveDirection : moveDirections) {
+                    capturedPiece = false;
+                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                            curCol + moveDirection[1]);
+                    if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
+                }
                 break;
             case ROOK:
+                for (int[] moveDirection : moveDirections) {
+                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                            curCol + moveDirection[1]);
+                    while(isValidSquare(possiblePosition)) {
+                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                                curCol + moveDirection[1]);
+                        if(isValidSquare(possiblePosition))possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                        curRow += moveDirection[0];
+                        curCol += moveDirection[1];
+                    }
+                    curRow = start.getRow();
+                    curCol = start.getColumn();
+                }
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + type);
         }
         return possibleMoves;
     }
