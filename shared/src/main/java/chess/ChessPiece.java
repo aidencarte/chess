@@ -63,14 +63,10 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
-        ChessPosition endPosition;
 
-        if(piece.getPieceType() == PieceType.PAWN)
-        {
+        PieceMovesCalculator newCalc = new PieceMovesCalculator(myPosition, board.getPiece(myPosition), board);
 
-            return List.of(new ChessMove(myPosition, endPosition,piece.getPieceType(),null));
-        }
-        return List.of();
+        return newCalc.getPossibleMoves();
     }
 }
 
