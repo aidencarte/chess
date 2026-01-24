@@ -15,9 +15,9 @@ public class PieceMovesCalculator {
     private final ChessPiece piece;
     private final ChessGame.TeamColor team;
     private boolean capturedPieceLastTurn;
-    private final int[][] allMoves = {{0,1},{0,-1},//straight 0 1
+    private final int[][] allMoves = {{0,1},{0,-1},//sideways 0 1
             {1,1},{1,-1},{-1,-1},{-1,1},//diagonal 2 3 4 5
-            {1,0},{-1,0},//sideways 6 7
+            {1,0},{-1,0},//straight 6 7
             {-1,2},{1,2},{2,1},{2,-1},{1,-2},{-1,-2},{-2,-1},{-2,1}};//knight moves 8-15
     HashSet<ChessMove> possibleMoves;
 
@@ -62,72 +62,13 @@ public class PieceMovesCalculator {
         switch(type)
         {
             case PAWN:
+                possibleMoves = pawnMoveCalc(moveDirections,curRow,curCol);
 
                 break;
-            case KING:
-                for (int[] moveDirection : moveDirections) {
-                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                            curCol + moveDirection[1]);
-                    if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
-                }
+            case KING,KNIGHT:
+                possibleMoves = smallMoveCalc(moveDirections,curRow, curCol);
                 break;
-            case QUEEN:
-                for (int[] moveDirection : moveDirections) {
-                    invalidMove = false;
-                    while(!invalidMove)
-                    {
-                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                                curCol + moveDirection[1]);
-                        if(!capturedPieceLastTurn) {
-                            if (isValidSquare(possiblePosition))
-                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
-                            else invalidMove = true;
-                        }
-                        else
-                        {
-                            invalidMove = true;
-                            capturedPieceLastTurn = false;
-                        }
-                        curRow += moveDirection[0];
-                        curCol += moveDirection[1];
-                    }
-                    curRow = start.getRow();
-                    curCol = start.getColumn();
-                }
-                break;
-            case BISHOP:
-                for (int[] moveDirection : moveDirections) {
-                    invalidMove = false;
-                    while(!invalidMove)
-                    {
-                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                                curCol + moveDirection[1]);
-                        if(!capturedPieceLastTurn) {
-                            if (isValidSquare(possiblePosition))
-                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
-                            else invalidMove = true;
-                        }
-                        else
-                        {
-                            invalidMove = true;
-                            capturedPieceLastTurn = false;
-                        }
-                        curRow += moveDirection[0];
-                        curCol += moveDirection[1];
-                    }
-                    curRow = start.getRow();
-                    curCol = start.getColumn();
-                }
-                break;
-            case KNIGHT:
-                for (int[] moveDirection : moveDirections) {
-                    capturedPieceLastTurn = false;
-                    possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                            curCol + moveDirection[1]);
-                    if(isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start,possiblePosition,null));
-                }
-                break;
-            case ROOK:
+            case QUEEN, BISHOP, ROOK:
                 for (int[] moveDirection : moveDirections) {
                     invalidMove = false;
                     while(!invalidMove)
@@ -156,19 +97,69 @@ public class PieceMovesCalculator {
         }
         return possibleMoves;
     }
+
+    private HashSet<ChessMove> pawnMoveCalc(ArrayList<int[]> moveDirections, int curRow, int curCol){
+        ChessGame.TeamColor teamColor = piece.getTeamColor();
+        ChessPosition possiblePosition;
+        var possibleMoves = new HashSet<ChessMove>();
+        possiblePosition = new ChessPosition(curRow+moveDirections.get(0)[0],curCol+moveDirections.get(0)[1]);
+        if(isValidSquare(possiblePosition) && board.getPiece(possiblePosition) ==null) //check for regular move forward
+            possibleMoves.add(new ChessMove(start, possiblePosition, null));
+        possiblePosition = new ChessPosition(curRow+moveDirections.get(1)[0],curCol+moveDirections.get(1)[1]);
+       //check for capture left
+        if(isValidSquare(possiblePosition)&&(board.getPiece(possiblePosition)!=null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
+            possibleMoves.add(new ChessMove(start, possiblePosition,null));
+        }
+        //check for capture right
+        possiblePosition = new ChessPosition(curRow+moveDirections.get(2)[0],curCol+moveDirections.get(2)[1]);
+        if(isValidSquare(possiblePosition)&&(board.getPiece(possiblePosition)!=null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
+            possibleMoves.add(new ChessMove(start, possiblePosition,null));
+        }
+        //check for initial move 2
+        possiblePosition = new ChessPosition(curRow+2*moveDirections.get(0)[0],curCol+2*moveDirections.get(0)[1]);
+        if(isValidSquare(possiblePosition)&&(teamColor== ChessGame.TeamColor.WHITE && curRow==2)||(teamColor== ChessGame.TeamColor.BLACK &&curRow==7)){
+            if(board.getPiece((possiblePosition))==null && board.getPiece(new ChessPosition(curRow+moveDirections.get(0)[0],curCol+moveDirections.get(0)[1]))==null)
+                possibleMoves.add(new ChessMove(start, possiblePosition,null));
+        }
+        if((teamColor== ChessGame.TeamColor.WHITE&& curRow == 7)||(teamColor== ChessGame.TeamColor.BLACK&&curRow==2) )
+        {
+            var promotionMoves = new HashSet<ChessMove>();
+            ChessPosition curPos;
+            for(ChessMove currentMove : possibleMoves)
+            {
+                curPos = currentMove.getEndPosition();
+                promotionMoves.add(new ChessMove(start, curPos, ChessPiece.PieceType.BISHOP));
+                promotionMoves.add(new ChessMove(start, curPos, ChessPiece.PieceType.KNIGHT));
+                promotionMoves.add(new ChessMove(start, curPos, ChessPiece.PieceType.ROOK));
+                promotionMoves.add(new ChessMove(start, curPos, ChessPiece.PieceType.QUEEN));
+            }
+            return promotionMoves;
+        }
+        return possibleMoves;
+    }
+    private HashSet<ChessMove> smallMoveCalc(ArrayList<int[]> moveDirections, int curRow, int curCol) {
+        ChessPosition possiblePosition;
+        var possibleMoves = new HashSet<ChessMove>();
+        for (int[] moveDirection : moveDirections) {
+            possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                    curCol + moveDirection[1]);
+            if (isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start, possiblePosition, null));
+        }
+        return possibleMoves;
+    }
     public ArrayList<int[]> getMoveDirections() {
         ArrayList<int[]> moveDirections = new ArrayList<int[]>();
         switch(type)
         {
             case PAWN:
                 if(team == ChessGame.TeamColor.WHITE) {
-                    moveDirections.add(allMoves[0]);
+                    moveDirections.add(allMoves[6]);
                     moveDirections.add(allMoves[2]);
-                    moveDirections.add(allMoves[5]);
+                    moveDirections.add(allMoves[3]);
                 }
                 else {
-                    moveDirections.add(allMoves[0]);
-                    moveDirections.add(allMoves[2]);
+                    moveDirections.add(allMoves[7]);
+                    moveDirections.add(allMoves[4]);
                     moveDirections.add(allMoves[5]);
                 }
                 break;
