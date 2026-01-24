@@ -7,6 +7,14 @@ import java.util.List;
 public class ChessPiece {
 
     @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
@@ -37,7 +45,9 @@ public class ChessPiece {
         BISHOP,
         KNIGHT,
         ROOK,
-        PAWN
+        PAWN;
+
+
     }
 
     /**
@@ -62,7 +72,6 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
 
         PieceMovesCalculator newCalc = new PieceMovesCalculator(myPosition, board.getPiece(myPosition), board);
 
