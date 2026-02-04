@@ -14,37 +14,37 @@ public class ChessPiece {
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "Q";
                 else return "q";
-                break;
+
             case KING:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "K";
                 else return "k";
-                break;
+
             case ROOK:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "R";
                 else return "r";
-                break;
+
             case BISHOP:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "B";
                 else return "b";
-                break;
+
             case KNIGHT:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "N";
                 else return "n";
-                break;
+
             case PAWN:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
                     return "P";
                 else return "p";
-                break;
+
             case null, default:
                 return " ";
 
         }
-        return "";
+
     }
 
     @Override

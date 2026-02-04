@@ -15,7 +15,7 @@ public class ChessBoard {
     ChessPiece[][] squares = new ChessPiece[8][8];
 
     public ChessBoard() {
-        resetBoard();
+
     }
 
     /**
@@ -99,5 +99,6 @@ public class ChessBoard {
                 "squares=" + Arrays.toString(squares) +
                 '}';
     }
+
 }
 

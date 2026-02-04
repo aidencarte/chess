@@ -29,6 +29,8 @@ public class PieceMovesCalculator {
         this.piece = piece;
         this.team = piece.getTeamColor();
     }
+
+
     private boolean isValidSquare(ChessPosition position)
     {
         boolean valid = false;
