@@ -11,11 +11,11 @@ import java.util.Objects;
  */
 public class ChessGame {
     private TeamColor currentTurn;
-    private ChessBoard board;
+    private ChessBoard myBoard;
 
     public ChessGame() {
     this.currentTurn = TeamColor.WHITE;
-    this.board = new ChessBoard();
+    this.myBoard = new ChessBoard();
     }
 
     /**
@@ -73,24 +73,17 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPiece currentPiece;
         Collection<ChessMove> currentMoves;
-        ChessPosition currentPosition, kingPosition = null;
-        for(int i = 1;i<=8;i++) {
-            for (int j = 1; j <= 8; j++) {
-                currentPosition = new ChessPosition(i,j);
-                if(board.getPiece(currentPosition).getPieceType()== ChessPiece.PieceType.KING &&
-                board.getPiece(currentPosition).getTeamColor()==teamColor) kingPosition = currentPosition;
-            }
-        }
+        ChessPosition currentPosition, kingPosition = findKingPosition(teamColor);
 
        for(int i = 1;i<=8;i++)
        {
         for(int j = 1;j<= 8;j++)
         {
             currentPosition = new ChessPosition(i,j);
-            currentPiece = board.getPiece(currentPosition);
+            currentPiece = myBoard.getPiece(currentPosition);
             if(currentPiece != null && currentPiece.getTeamColor()!=teamColor)
             {
-                currentMoves = currentPiece.pieceMoves(board, currentPosition);
+                currentMoves = currentPiece.pieceMoves(myBoard, currentPosition);
                 for(ChessMove chessMove : currentMoves)
                 {
                     if(chessMove.getEndPosition() ==  kingPosition) return true;
@@ -99,6 +92,18 @@ public class ChessGame {
         }
        }
         return false;
+    }
+    private ChessPosition findKingPosition(TeamColor teamColor)
+    {
+        ChessPosition currentPosition, kingPosition = null;
+        for(int i = 1;i<=8;i++) {
+            for (int j = 1; j <= 8; j++) {
+                currentPosition = new ChessPosition(i,j);
+                if(myBoard.getPiece(currentPosition)!=null && myBoard.getPiece(currentPosition).getPieceType()== ChessPiece.PieceType.KING &&
+                        myBoard.getPiece(currentPosition).getTeamColor()==teamColor) kingPosition = currentPosition;
+            }
+        }
+        return kingPosition;
     }
 
     /**
@@ -109,17 +114,9 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if(isInCheck(teamColor)) {
-            ChessPosition currentPosition, kingPosition = null;
-            ChessPiece king;
-            for (int i = 1; i <= 8; i++) {
-                for (int j = 1; j <= 8; j++) {
-                    currentPosition = new ChessPosition(i, j);
-                    if (board.getPiece(currentPosition).getPieceType() == ChessPiece.PieceType.KING &&
-                            board.getPiece(currentPosition).getTeamColor() == teamColor) kingPosition = currentPosition;
-                }
-            }
-            king = board.getPiece(kingPosition);
-            return king.pieceMoves(board, kingPosition).isEmpty(); //true if king can not move
+            ChessPosition kingPosition = findKingPosition(teamColor);
+            ChessPiece king = myBoard.getPiece(kingPosition);
+            return king.pieceMoves(myBoard, kingPosition).isEmpty(); //true if king can not move
 
         }
         return false;
@@ -133,7 +130,13 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if(!isInCheck(teamColor))
+        {
+            ChessPosition kingPosition = findKingPosition(teamColor);
+            ChessPiece king = myBoard.getPiece(kingPosition);
+            return king.pieceMoves(myBoard, kingPosition).isEmpty();
+        }
+        return false;
     }
 
     /**
@@ -142,7 +145,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        myBoard = board;
     }
 
     /**
@@ -152,7 +155,7 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
 
-        return board;
+        return myBoard;
     }
 
     @Override
@@ -161,11 +164,11 @@ public class ChessGame {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return currentTurn == chessGame.currentTurn && Objects.equals(board, chessGame.board);
+        return currentTurn == chessGame.currentTurn && Objects.equals(myBoard, chessGame.myBoard);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(currentTurn, board);
+        return Objects.hash(currentTurn, myBoard);
     }
 }
