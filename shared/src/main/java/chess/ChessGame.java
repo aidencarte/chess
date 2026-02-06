@@ -18,6 +18,7 @@
         public ChessGame() {
         this.currentTurn = TeamColor.WHITE;
         this.myBoard = new ChessBoard();
+        myBoard.resetBoard();
         }
 
         /**
@@ -95,9 +96,11 @@
             processingWaste.resetBoard();
             for(int i = 1;i<+8;i++)
             {
-                for(int j = 1; j<+8;j++)
-                {
-                    if(myBoard.getPiece(new ChessPosition(i,j)) != processingWaste.getPiece(new ChessPosition(i,j))) return false;
+                for(int j = 1; j<+8;j++) {
+                    if (myBoard.getPiece(new ChessPosition(i, j))!=null) {
+                        if (!myBoard.getPiece(new ChessPosition(i, j)).equals(processingWaste.getPiece(new ChessPosition(i, j))))
+                            return false;
+                    }
                 }
             }
             return  true;
