@@ -53,17 +53,14 @@ public class ChessPiece {
             return false;
         }
         ChessPiece that = (ChessPiece) o;
-        return pieceColor == that.pieceColor && type == that.type;
+        return pieceColor.equals(that.pieceColor)&& type.equals(that.type);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
     }
-    public ChessPiece(ChessPiece copy) {
-        this.pieceColor = copy.pieceColor;
-        this.type = copy.type;
-    }
+
 
 
     private final ChessGame.TeamColor pieceColor;
