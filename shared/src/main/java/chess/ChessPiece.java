@@ -60,6 +60,11 @@ public class ChessPiece {
     public int hashCode() {
         return Objects.hash(pieceColor, type);
     }
+    public ChessPiece(ChessPiece copy) {
+        this.pieceColor = copy.pieceColor;
+        this.type = copy.type;
+    }
+
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
