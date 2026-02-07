@@ -66,10 +66,10 @@
 
                 if(myBoard.getPiece(possibleMove.getEndPosition())==null ||
                         (myBoard.getPiece(possibleMove.getEndPosition())!=null &&
-                                myBoard.getPiece(possibleMove.getEndPosition()).getTeamColor()!=currentTurn)) {
+                                myBoard.getPiece(possibleMove.getEndPosition()).getTeamColor()!=piece.getTeamColor())) {
                     myBoard.addPiece(possibleMove.getEndPosition(), piece);
                     myBoard.addPiece(possibleMove.getStartPosition(), null);
-                    if (!isInCheck(currentTurn)) validMoves.add(possibleMove);
+                    if (!isInCheck(piece.getTeamColor())) validMoves.add(possibleMove);
                 }
             }
             setBoard(startBoard);
@@ -84,8 +84,55 @@
          * @throws InvalidMoveException if move is invalid
          */
         public void makeMove(ChessMove move) throws InvalidMoveException {
+            ChessPiece piece = myBoard.getPiece(move.getStartPosition());
+            if(piece == null)
+            {
+                throw new InvalidMoveException("No piece here!");
+            }
 
-            throw new RuntimeException("Not implemented");
+            if(currentTurn != piece.getTeamColor())
+            {
+                throw new InvalidMoveException("Wrong Color Piece");
+            }
+            Collection<ChessMove> possibleMoves = validMoves(move.getStartPosition());
+            if(possibleMoves.isEmpty())
+            {
+                throw new InvalidMoveException(("This piece has no valid moves!"));
+            }
+            if(possibleMoves.contains(move))
+            {
+                if(move.getPromotionPiece()!=null)
+                {
+                    pawnIsPromoting(move);
+                }
+                else {
+                    ChessPosition position;
+                    myBoard.addPiece(move.getEndPosition(),piece);
+                    myBoard.addPiece(move.getStartPosition(),null);
+                }
+                if(currentTurn == TeamColor.WHITE) currentTurn = TeamColor.BLACK;
+                else currentTurn = TeamColor.WHITE;
+            }
+            else {
+                throw new InvalidMoveException("That move is not valid!");
+            }
+
+        }
+        public void pawnIsPromoting(ChessMove move)
+        {
+            ChessPiece piece = myBoard.getPiece(move.getStartPosition());
+            if(piece.getPieceType()!= ChessPiece.PieceType.PAWN) return;
+            ChessPiece.PieceType promotionType = move.getPromotionPiece();
+            switch(promotionType)
+            {
+                case QUEEN, ROOK, KNIGHT, BISHOP:
+                    myBoard.addPiece(move.getEndPosition(),new ChessPiece(currentTurn, promotionType));
+                    myBoard.addPiece(move.getStartPosition(), null);
+                    break;
+                default:
+                    return;
+            }
+
         }
 
 
