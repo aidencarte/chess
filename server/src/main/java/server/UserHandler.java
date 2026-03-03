@@ -43,5 +43,8 @@ public class UserHandler{
         }
     }
 
+    public void loginUser(@NotNull Context context) {
+
+    }
 }
 

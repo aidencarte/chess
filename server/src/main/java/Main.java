@@ -4,8 +4,7 @@ import dataaccess.*;
 
 public class Main {
     public static void main(String[] args) {
-        UserService userService = new UserService(new MemoryUserDAO(),new MemoryAuthDAO());
-        Server server = new Server(userService);
+        Server server = new Server();
         server.run(8080);
 
 
