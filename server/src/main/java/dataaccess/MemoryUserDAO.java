@@ -13,7 +13,9 @@ public class MemoryUserDAO implements UserDAO{
 
     }
 
-    public void createUser(RegisterRequest registerRequest) throws DataAccessException {
+    public void createUser(RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException {
+        UserData userData = getUser(registerRequest.username());
+        if(userData!= null) throw new AlreadyTakenException("Username Already Taken");
         users.put(registerRequest.username(),
                 new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email()));
     }

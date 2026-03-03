@@ -8,7 +8,7 @@ public class UserService {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
 
-    public UserService(MemoryUserDAO userDAO, AuthDAO authDAO)
+    public UserService(MemoryUserDAO userDAO, MemoryAuthDAO authDAO)
     {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
@@ -18,13 +18,15 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws BadRequestException {
+    public RegisterResult register(RegisterRequest registerRequest) throws BadRequestException, AlreadyTakenException {
+
         try{
             userDAO.createUser(registerRequest);
         }
         catch (DataAccessException e) {
             throw new BadRequestException(e.getMessage());
         }
+
         String authToken = generateToken();
         AuthData authData = new AuthData(registerRequest.username(), authToken);
         authDAO.createAuth(authData);
