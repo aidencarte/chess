@@ -1,9 +1,12 @@
 package dataaccess;
+import chess.ChessGame;
 import model.GameData;
 
+import java.util.HashMap;
+
 public interface GamesDAO {
-    GameData getGame(int gameID) throws DataAccessException;
-    void createGame(GameData gameData) throws DataAccessException;
+    HashMap<Integer, GameData> getGames() throws DataAccessException;
+    void createGame(GameData gameData);
     void updateGame(GameData gameData) throws DataAccessException;
     void clear();
 }

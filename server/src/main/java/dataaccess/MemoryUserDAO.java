@@ -6,6 +6,8 @@ import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO{
     private HashMap<String, UserData> users = new HashMap<>();
+
+
     public UserData getUser(String username) throws DataAccessException {
         var result = users.get(username);
         if(result == null) throw new DataAccessException("Could not find user");

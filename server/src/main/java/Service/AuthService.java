@@ -6,9 +6,11 @@ import java.util.UUID;
 
 public class AuthService {
     private final UserDAO userDAO;
+    private final DataAccess dataAccess;
     private final AuthDAO authDAO;
 
-    public AuthService(MemoryUserDAO userDAO, MemoryAuthDAO authDAO) {
+    public AuthService(DataAccess dataAccess) {
+        this.dataAccess = dataAccess
         this.userDAO = userDAO;
         this.authDAO = authDAO;
     }
