@@ -2,24 +2,23 @@ package server;
 
 import chess.*;
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import model.*;
-import Service.*;
+import service.*;
 
-import static jdk.internal.joptsimple.internal.Strings.isNullOrEmpty;
-import static utilities.StringUtilities.*;
 
 import java.util.*;
 
-public class EndpointManager {
+public class EndpointHandler {
     private final AdminService adminService;
     private final UserService userService;
     private final AuthService authService;
     private final GameService gameService;
 
-    public EndpointManager(DataAccess dataAccess) {
+    public EndpointHandler(DataAccess dataAccess) {
         adminService = new AdminService(dataAccess);
         userService = new UserService(dataAccess);
         authService = new AuthService(dataAccess);
@@ -37,63 +36,75 @@ public class EndpointManager {
     }
 
 
-    private void clearDb(Context context) throws CodedException {
+    private void clearDb(Context context) throws DataAccessException {
         adminService.clearApplication();
         context.json("{}");
+        context.status(200);
     }
 
-    private void registerUser(Context context) throws CodedException {
+    private void registerUser(Context context) throws DataAccessException {
         RegisterRequest registerRequest = getBodyObject(context, RegisterRequest.class);
-        if (isNullOrEmpty(registerRequest.username()) || isNullOrEmpty(registerRequest.email())
-                || isNullOrEmpty(registerRequest.password())) {
-            throw new CodedException(400, "bad request");
+        if ((registerRequest.username()==null) || (registerRequest.email()==null)
+                || (registerRequest.password()==null)) {
+            throw new DataAccessException(400, "bad request");
         }
+        try {
+            AuthData authData = userService.register(registerRequest);
 
-        AuthData authData = userService.register(userData);
-
-        var response = Map.of("username", userData.username(), "authToken", authData.authToken());
+        if ((authData.username()==null) || (authData.authToken()==null))
+            throw new DataAccessException(400, "bad request");
+        RegisterResult registerResult = new RegisterResult(authData.username(),authData.authToken());
+        var response = Map.of("username", registerResult.username(), "authToken", registerResult.authToken());
         context.json(new Gson().toJson(response));
+        context.status(200);
+        } catch (DataAccessException e) {
+            throw new DataAccessException(e.getStatusCode(), e.getMessage());
+        }
     }
 
 
-    private void loginUser(Context context) throws CodedException {
-        UserData userData = getBodyObject(context, UserData.class);
-        if (isNullOrEmpty(userData.username()) || isNullOrEmpty(userData.password())) {
-            throw new CodedException(400, "missing required parameters");
+    private void loginUser(Context context) throws DataAccessException {
+        LoginRequest loginRequest = getBodyObject(context, LoginRequest.class);
+        if ((loginRequest.username()==null) || (loginRequest.password()==null)) {
+            throw new DataAccessException(400, "missing required parameters");
         }
 
-        AuthData authData = authService.createSession(userData);
+        LoginResult loginResult = authService.createAuth(loginRequest);
 
-        var response = Map.of("username", userData.username(), "authToken", authData.authToken());
+        var response = Map.of("username", loginResult.username(), "authToken", loginResult.authToken());
         context.json(new Gson().toJson(response));
+        context.status(200);
     }
 
 
-    private void logoutUser(Context context) throws CodedException {
+    private void logoutUser(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         authService.deleteSession(authToken);
         context.json("{}");
+        context.status(200);
     }
 
-    private void createGame(Context context) throws CodedException {
+    private void createGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         GameData gameData = getBodyObject(context, GameData.class);
-        if (isNullOrEmpty(gameData.gameName())) {
-            throw new CodedException(400, "bad request");
+        if ((gameData.gameName()==null)) {
+            throw new DataAccessException(400, "bad request");
         }
 
         GameData game = gameService.createGame(authToken, gameData.gameName());
 
         var response = Map.of("gameID", game.gameID());
         context.json(new Gson().toJson(response));
+        context.status(200);
     }
 
-    private void listGames(Context context) throws CodedException {
+    private void listGames(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         Collection<GameData> gameList = gameService.listGames(authToken);
 
         var response = Map.of("games", gameList);
         context.json(new Gson().toJson(response));
+        context.status(200);
     }
 
     static class JoinGameReq {
@@ -101,16 +112,18 @@ public class EndpointManager {
         int gameID;
     }
 
-    private void joinGame(Context context) throws CodedException {
+    private void joinGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         JoinGameReq joinGameReq = getBodyObject(context, JoinGameReq.class);
         if (joinGameReq.playerColor == null) {
-            throw new CodedException(400, "bad request");
+            throw new DataAccessException(400, "bad request");
         }
+
 
         GameData game = gameService.joinGame(authToken, joinGameReq.playerColor, joinGameReq.gameID);
 
         context.json(new Gson().toJson(game));
+        context.status(200);
     }
 
     private static <T> T getBodyObject(Context context, Class<T> clazz) {

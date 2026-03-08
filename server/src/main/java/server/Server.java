@@ -1,44 +1,40 @@
 package server;
 
-import Service.UserService;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import io.javalin.*;
-import io.javalin.http.Handler;
-import org.eclipse.jetty.server.Authentication;
+import io.javalin.http.*;
+import com.google.gson.Gson;
+
+import java.util.Map;
 
 public class Server {
 
-    private final UserService userService;
+    private final EndpointHandler endpointHandler;
     private final Javalin javalin;
     public Server() {
-        this.userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
+        DataAccess dataAccess = new MemoryDataAccess();
+        this.endpointHandler = new EndpointHandler(dataAccess);
         this.javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        endpointHandler.register(javalin);
+        javalin.exception(Exception.class, (e, context) ->
+                exceptionHandler(new DataAccessException(200, e.getMessage()), context));
+        javalin.exception(DataAccessException.class, this::exceptionHandler);
 
 
         // Register your endpoints and exception handlers here.
 
     }
 
-    private void createHandlers()
-    {
-        UserHandler userHandler = new UserHandler(userService);
-        GameHandler gameHandler = new GameHandler(userService);
-        javalin.post("/user", userHandler::registerUser);
-        javalin.delete("/db", this::clearDb);
-        javalin.post("/user", userHandler::registerUser);
-        javalin.post("/session", userHandler::loginUser);
-        javalin.delete("/session", userHandler::logoutUser);
-        javalin.post("/game", gameHandler::createGame);
-        javalin.get("/game", gameHandler::listGames);
-        javalin.put("/game", gameHandler::joinGame);
-    }
 
 
     public int run(int desiredPort) {
-        createHandlers();
         javalin.start(desiredPort);
         return javalin.port();
+    }
+    private void exceptionHandler(DataAccessException e, Context context) {
+        var body = new Gson().toJson(Map.of("message", String.format("Error: %s", e.getMessage())));
+        context.status(e.getStatusCode());
+        context.json(body);
     }
 
     public void stop() {

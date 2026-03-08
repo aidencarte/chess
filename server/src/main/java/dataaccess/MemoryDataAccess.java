@@ -1,17 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
-import model.AuthData;
-import model.GameData;
-import model.RegisterRequest;
-import model.UserData;
+import model.*;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
-public class MemoryDataAcess implements  DataAccess{
+public class MemoryDataAccess implements  DataAccess{
     private HashMap<String, AuthData> auths = new HashMap<>();
     private HashMap<String, UserData> users = new HashMap<>();
     private HashMap<Integer, GameData> games =  new HashMap<>();
@@ -25,22 +21,23 @@ public class MemoryDataAcess implements  DataAccess{
 
     public UserData createUser(RegisterRequest registerRequest) throws DataAccessException {
         UserData userData = getUser(registerRequest.username());
-        if(userData!= null) throw new DataAccessException("Username Already Taken");
-        var newUser = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
-        users.put(registerRequest.username(),
-                newUser);
-        return newUser;
+        if(userData== null) {
+            var newUser = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+            users.put(registerRequest.username(),
+                    newUser);
+            return newUser;
+        }
+        else throw new DataAccessException(403, "Username Already Taken");
     }
 
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username)  {
         var result = users.get(username);
-        if(result == null) throw new DataAccessException("Could not find user");
         return result;
     }
 
     public GameData createGame(String gameName) throws DataAccessException {
         var gameID = nextGameID++;
-        var newGame = new GameData(gameID, null, null, gameName, new ChessGame());
+        var newGame = new GameData(gameID, null, null, gameName, new ChessGame(), GameData.State.UNDECIDED);
         games.put(newGame.gameID(), newGame);
         return newGame;
     }
@@ -49,23 +46,24 @@ public class MemoryDataAcess implements  DataAccess{
         return games.get(gameID);
     }
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames() {
         return games.values();
     }
 
-    public GameData updateGame(GameData game) throws DataAccessException {
-        return null;
+    public GameData updateGame(GameData game){
+        games.put(game.gameID(), game);
+        return game;
     }
 
-    public AuthData createAuth(String username) throws DataAccessException {
-        var newAuth = new AuthData(generateToken(), username);
-        auths.put(username,newAuth);
-        return newAuth;
+    public AuthData createAuth(String username) {
+        var auth = new AuthData(generateToken(), username);
+        auths.put(auth.authToken(), auth);
+        return auth;
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
         var result = auths.get(authToken);
-        if(result == null) throw new DataAccessException("Could not find auth");
+        if(result == null) throw new DataAccessException(401, "Unauthorized");
         return result;
     }
 
