@@ -80,8 +80,8 @@ public class EndpointHandler {
     private void logoutUser(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         authService.deleteSession(authToken);
+
         context.json("{}");
-        context.status(200);
     }
 
     private void createGame(Context context) throws DataAccessException {

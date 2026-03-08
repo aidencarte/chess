@@ -20,12 +20,14 @@ public class AuthService extends Service {
     }
 
     public void deleteSession(String authToken) throws DataAccessException {
-        try {
+        try{
             getAuthData(authToken);
             dataAccess.deleteAuth(authToken);
-        } catch (DataAccessException ex) {
-            throw new DataAccessException(500, "Internal server error");
-        }
     }
+        catch (DataAccessException e) {
+            throw new DataAccessException(e.getStatusCode(),e.getMessage());
+        }
+
+        }
 
 }

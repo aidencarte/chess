@@ -16,8 +16,6 @@ public class Server {
         this.endpointHandler = new EndpointHandler(dataAccess);
         this.javalin = Javalin.create(config -> config.staticFiles.add("web"));
         endpointHandler.register(javalin);
-        javalin.exception(Exception.class, (e, context) ->
-                exceptionHandler(new DataAccessException(200, e.getMessage()), context));
         javalin.exception(DataAccessException.class, this::exceptionHandler);
 
 

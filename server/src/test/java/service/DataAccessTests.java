@@ -25,8 +25,8 @@ public class DataAccessTests {
     @MethodSource("dataAccessImplementations")
     public void clear(DataAccess dataAccess) throws Exception {
         var userService = new UserService(dataAccess);
-        var registerRequest = new RegisterRequest("juan", "too many secrets", "juan@byu.edu");
-        var loginRequest = new LoginRequest("juan", "too many secrets");
+        var registerRequest = new RegisterRequest("aiden", "too many passwords", "default@byu.edu");
+        var loginRequest = new LoginRequest("aiden", "too many passwords");
         var authData = userService.register(registerRequest);
 
         var gameService = new GameService(dataAccess);

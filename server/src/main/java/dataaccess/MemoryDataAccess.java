@@ -13,7 +13,7 @@ public class MemoryDataAccess implements  DataAccess{
     private HashMap<Integer, GameData> games =  new HashMap<>();
     private int nextGameID = 1;
 
-    public void clear() throws DataAccessException {
+    public void clear() {
     auths.clear();
     users.clear();
     games.clear();
@@ -35,14 +35,14 @@ public class MemoryDataAccess implements  DataAccess{
         return result;
     }
 
-    public GameData createGame(String gameName) throws DataAccessException {
+    public GameData createGame(String gameName) {
         var gameID = nextGameID++;
         var newGame = new GameData(gameID, null, null, gameName, new ChessGame(), GameData.State.UNDECIDED);
         games.put(newGame.gameID(), newGame);
         return newGame;
     }
 
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) {
         return games.get(gameID);
     }
 
@@ -67,7 +67,7 @@ public class MemoryDataAccess implements  DataAccess{
         return result;
     }
 
-    public void deleteAuth(String username) throws DataAccessException {
+    public void deleteAuth(String username) {
         auths.remove(username);
     }
     public static String generateToken() {

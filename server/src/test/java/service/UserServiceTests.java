@@ -43,3 +43,6 @@ public class UserServiceTests {
         assertThrows(DataAccessException.class, () -> service.register(registerRequest));
     }
 }
+
+
+
