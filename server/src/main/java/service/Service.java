@@ -14,7 +14,7 @@ public abstract class Service {
 
 
     protected AuthData getAuthData(String authToken) throws DataAccessException {
-        try {
+
             if (authToken != null) {
                 var authData = dataAccess.getAuth(authToken);
                 if (authData != null) {
@@ -22,9 +22,7 @@ public abstract class Service {
                 }
             }
             throw new DataAccessException(401, "Not authorized");
-        } catch (DataAccessException ex) {
-            throw new DataAccessException(500, "Internal Server Error");
-        }
+
     }
 
 }

@@ -20,13 +20,10 @@ public class AuthService extends Service {
     }
 
     public void deleteSession(String authToken) throws DataAccessException {
-        try{
+
             getAuthData(authToken);
             dataAccess.deleteAuth(authToken);
-    }
-        catch (DataAccessException e) {
-            throw new DataAccessException(e.getStatusCode(),e.getMessage());
-        }
+
 
         }
 

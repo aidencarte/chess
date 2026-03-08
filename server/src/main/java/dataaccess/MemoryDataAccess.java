@@ -5,6 +5,7 @@ import model.*;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 public class MemoryDataAccess implements  DataAccess{
@@ -63,7 +64,7 @@ public class MemoryDataAccess implements  DataAccess{
 
     public AuthData getAuth(String authToken) throws DataAccessException {
         var result = auths.get(authToken);
-        if(result == null) throw new DataAccessException(401, "Unauthorized");
+        if(Objects.isNull(result)) throw new DataAccessException(401,"Unauthorized");
         return result;
     }
 

@@ -33,7 +33,6 @@ public class GameService extends Service {
     public GameData joinGame(String authToken, ChessGame.TeamColor color, int gameID) throws DataAccessException {
         AuthData authData = getAuthData(authToken);
         String username = authData.username();
-        try {
             GameData gameData = dataAccess.getGame(gameID);
             if (gameData == null) {
                 throw new DataAccessException(400, "Unknown game");
@@ -58,9 +57,6 @@ public class GameService extends Service {
                 dataAccess.updateGame(gameData);
             }
             return gameData;
-        } catch (DataAccessException ignored) {
-            throw new DataAccessException(500, "Server error");
-        }
     }
 
 }
