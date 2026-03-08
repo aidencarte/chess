@@ -52,7 +52,9 @@ public class EndpointHandler {
             AuthData authData = userService.register(registerRequest);
 
         if ((authData.username()==null) || (authData.authToken()==null))
+        {
             throw new DataAccessException(400, "bad request");
+        }
         RegisterResult registerResult = new RegisterResult(authData.username(),authData.authToken());
         var response = Map.of("username", registerResult.username(), "authToken", registerResult.authToken());
         context.json(new Gson().toJson(response));

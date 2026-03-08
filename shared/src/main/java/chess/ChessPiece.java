@@ -11,34 +11,55 @@ public class ChessPiece {
         switch(getPieceType())
         {
             case QUEEN:
-                if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                if(getTeamColor()== ChessGame.TeamColor.WHITE) {
                     return "Q";
-                else return "q";
+                }
+                else {
+                    return "q";
+        }
 
             case KING:
-                if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                if(getTeamColor()== ChessGame.TeamColor.WHITE) {
                     return "K";
-                else return "k";
+                }
+                else{
+                    return "k";
+                }
 
             case ROOK:
-                if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                if(getTeamColor()== ChessGame.TeamColor.WHITE){
                     return "R";
-                else return "r";
+                }
+                else{
+                    return "r";
+                }
 
             case BISHOP:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                {
                     return "B";
-                else return "b";
+                }
+                else{
+                    return "b";
+                }
 
             case KNIGHT:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                {
                     return "N";
-                else return "n";
+                }
+                else{
+                    return "n";
+                }
 
             case PAWN:
                 if(getTeamColor()== ChessGame.TeamColor.WHITE)
+                {
                     return "P";
-                else return "p";
+                }
+                else{
+                    return "p";
+                }
 
             case null, default:
                 return " ";

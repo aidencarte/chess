@@ -57,7 +57,9 @@ public class ChessBoard {
         ChessGame.TeamColor currentColor = ChessGame.TeamColor.WHITE;
         for(int i = 1; i<= squares.length; i++)
         {
-            if(i ==6) currentColor = ChessGame.TeamColor.BLACK;
+            if(i ==6){
+                currentColor = ChessGame.TeamColor.BLACK;
+            }
             switch(i) {
                 case 1,8:
                     for (int j = 1; j <= squares[i-1].length; j++) {
@@ -88,7 +90,9 @@ public class ChessBoard {
 
                 break;
                 default:
-                    for(int j = 1; j <= squares[i-1].length;j++) squares[i-1][j-1] = null;
+                    for(int j = 1; j <= squares[i-1].length;j++){
+                        squares[i-1][j-1] = null;
+                    }
                     break;
             }
         }

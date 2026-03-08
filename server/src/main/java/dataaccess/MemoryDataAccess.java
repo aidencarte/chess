@@ -28,7 +28,9 @@ public class MemoryDataAccess implements  DataAccess{
                     newUser);
             return newUser;
         }
-        else throw new DataAccessException(403, "Username Already Taken");
+        else{
+            throw new DataAccessException(403, "Username Already Taken");
+        }
     }
 
     public UserData getUser(String username)  {
@@ -64,7 +66,9 @@ public class MemoryDataAccess implements  DataAccess{
 
     public AuthData getAuth(String authToken) throws DataAccessException {
         var result = auths.get(authToken);
-        if(Objects.isNull(result)) throw new DataAccessException(401,"Unauthorized");
+        if(Objects.isNull(result)){
+            throw new DataAccessException(401,"Unauthorized");
+        }
         return result;
     }
 

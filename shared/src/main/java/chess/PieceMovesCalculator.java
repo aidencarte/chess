@@ -22,7 +22,6 @@ public class PieceMovesCalculator {
     HashSet<ChessMove> possibleMoves;
 
     public PieceMovesCalculator(ChessPosition start, ChessPiece piece, ChessBoard board) {
-
         this.type = piece.getPieceType();
         this.start = start;
         this.board = board;
@@ -37,8 +36,7 @@ public class PieceMovesCalculator {
         if((position.getRow() >= 1 && position.getRow() <= 8) &&
         (position.getColumn() >= 1 && position.getColumn() <= 8))
         {
-            valid = true;
-            if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() == team) valid = false;
+            valid = board.getPiece(position) == null || board.getPiece(position).getTeamColor() != team;
             if(board.getPiece(position) != null && board.getPiece(position).getTeamColor() != team) {
                 valid = true;
                 capturedPieceLastTurn = true;
@@ -79,8 +77,11 @@ public class PieceMovesCalculator {
                                 curCol + moveDirection[1]);
                         if(!capturedPieceLastTurn) {
                             if (isValidSquare(possiblePosition))
-                                possibleMoves.add(new ChessMove(start, possiblePosition, null));
-                            else invalidMove = true;
+                            {possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                            }
+                            else {
+                                invalidMove = true;
+                            }
                         }
                         else
                         {
@@ -106,24 +107,33 @@ public class PieceMovesCalculator {
         var possibleMoves = new HashSet<ChessMove>();
         possiblePosition = new ChessPosition(curRow+moveDirections.get(0)[0],curCol+moveDirections.get(0)[1]);
         if(isValidSquare(possiblePosition) && board.getPiece(possiblePosition) ==null) //check for regular move forward
+        {
             possibleMoves.add(new ChessMove(start, possiblePosition, null));
+        }
         possiblePosition = new ChessPosition(curRow+moveDirections.get(1)[0],curCol+moveDirections.get(1)[1]);
        //check for capture left
-        if(isValidSquare(possiblePosition)&&(board.getPiece(possiblePosition)!=null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
+        if(isValidSquare(possiblePosition)&&
+                (board.getPiece(possiblePosition)!=null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
             possibleMoves.add(new ChessMove(start, possiblePosition,null));
         }
         //check for capture right
         possiblePosition = new ChessPosition(curRow+moveDirections.get(2)[0],curCol+moveDirections.get(2)[1]);
-        if(isValidSquare(possiblePosition)&&(board.getPiece(possiblePosition)!=null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
+        if(isValidSquare(possiblePosition)&&(board.getPiece(possiblePosition)!=
+                null&&board.getPiece(possiblePosition).getTeamColor()!=teamColor)){
             possibleMoves.add(new ChessMove(start, possiblePosition,null));
         }
         //check for initial move 2
-        possiblePosition = new ChessPosition(curRow+2*moveDirections.get(0)[0],curCol+2*moveDirections.get(0)[1]);
-        if(isValidSquare(possiblePosition)&&(teamColor== ChessGame.TeamColor.WHITE && curRow==2)||(teamColor== ChessGame.TeamColor.BLACK &&curRow==7)){
-            if(board.getPiece((possiblePosition))==null && board.getPiece(new ChessPosition(curRow+moveDirections.get(0)[0],curCol+moveDirections.get(0)[1]))==null)
-                possibleMoves.add(new ChessMove(start, possiblePosition,null));
+        possiblePosition = new ChessPosition(curRow+2*moveDirections.get(0)[0],
+                curCol+2*moveDirections.get(0)[1]);
+        if(isValidSquare(possiblePosition)&&(teamColor== ChessGame.TeamColor.WHITE && curRow==2)||
+                (teamColor== ChessGame.TeamColor.BLACK &&curRow==7)){
+            if(board.getPiece((possiblePosition))==null &&
+                    board.getPiece(new ChessPosition(curRow+moveDirections.get(0)[0],
+                            curCol+moveDirections.get(0)[1]))==null)
+            {possibleMoves.add(new ChessMove(start, possiblePosition,null));
+            }
         }
-        if((teamColor== ChessGame.TeamColor.WHITE&& curRow == 7)||(teamColor== ChessGame.TeamColor.BLACK&&curRow==2) )
+        if((teamColor== ChessGame.TeamColor.WHITE&& curRow == 7)||(teamColor== ChessGame.TeamColor.BLACK&&curRow==2))
         {
             var promotionMoves = new HashSet<ChessMove>();
             ChessPosition curPos;
@@ -145,7 +155,9 @@ public class PieceMovesCalculator {
         for (int[] moveDirection : moveDirections) {
             possiblePosition = new ChessPosition(curRow + moveDirection[0],
                     curCol + moveDirection[1]);
-            if (isValidSquare(possiblePosition)) possibleMoves.add(new ChessMove(start, possiblePosition, null));
+            if (isValidSquare(possiblePosition)){
+                possibleMoves.add(new ChessMove(start, possiblePosition, null));
+            }
         }
         return possibleMoves;
     }
@@ -182,17 +194,7 @@ public class PieceMovesCalculator {
                 moveDirections.add(allMoves[14]);
                 moveDirections.add(allMoves[15]);
                 break;
-            case QUEEN:
-                moveDirections.add(allMoves[0]);
-                moveDirections.add(allMoves[1]);
-                moveDirections.add(allMoves[2]);
-                moveDirections.add(allMoves[3]);
-                moveDirections.add(allMoves[4]);
-                moveDirections.add(allMoves[5]);
-                moveDirections.add(allMoves[6]);
-                moveDirections.add(allMoves[7]);
-                break;
-            case KING:
+            case QUEEN, KING:
                 moveDirections.add(allMoves[0]);
                 moveDirections.add(allMoves[1]);
                 moveDirections.add(allMoves[2]);
