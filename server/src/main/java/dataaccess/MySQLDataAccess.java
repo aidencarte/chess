@@ -79,10 +79,9 @@ public class MySQLDataAccess implements DataAccess{
 
     private final String[] createStatements = {
             """
-                CREATE TABLE IF NOT EXISTS  pet (
+                CREATE TABLE IF NOT EXISTS  users (
                   `id` int NOT NULL AUTO_INCREMENT,
-                  `name` varchar(256) NOT NULL,
-                  `type` ENUM('CAT', 'DOG', 'FISH', 'FROG', 'ROCK') DEFAULT 'CAT',
+                  `username` varchar(256) NOT NULL,
                   `json` TEXT DEFAULT NULL,
                   PRIMARY KEY (`id`),
                   INDEX(type),
