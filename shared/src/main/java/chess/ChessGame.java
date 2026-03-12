@@ -14,7 +14,7 @@
      */
     public class ChessGame {
         private TeamColor currentTurn;
-        private ChessBoard myBoard;
+        public ChessBoard myBoard;
 
 
         public ChessGame() {

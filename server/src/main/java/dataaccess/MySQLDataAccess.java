@@ -41,7 +41,7 @@ public class MySQLDataAccess implements DataAccess{
     public UserData getUser(String username) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            String statement = "SELECT password, email from user WHERE username=?";
+            String statement = "SELECT password, email FROM user WHERE username=?";
             try(PreparedStatement preparedStatement = conn.prepareStatement(statement))
             {
                 preparedStatement.setString(1, username);
@@ -66,8 +66,21 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData createGame(String gameName) throws DataAccessException {
+        var game = new ChessGame();
+        game.myBoard.resetBoard();
+        var state = GameData.State.UNDECIDED;
+        var id = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+                gameName,
+                null,
+                null,
+                game.toString(),
+                state.toString());
+        if (id != 0) {
+            return new GameData(id, null, null, gameName, game, state);
+        }
         return null;
     }
+
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
