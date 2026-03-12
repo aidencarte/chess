@@ -1,8 +1,12 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import model.*;
 import com.google.gson.Gson;
 import java.sql.*;
+import chess.ChessPiece;
 
 
 import java.util.Collection;
@@ -76,13 +80,11 @@ public class MySQLDataAccess implements DataAccess{
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
                     "blackPlayerName, game, state FROM `game` WHERE gameID=?"))
             {
-                preparedStatement.setString(1, gameID);
+                preparedStatement.setInt(1, gameID);
                 try(var results = preparedStatement.executeQuery()){
                     if(results.next())
                     {
-                        var password = results.getString("password");
-                        var email = results.getString("email");
-                        return new UserData(username, password, email);
+                        return pullGameData(results);
                     }
                 }
             }
@@ -178,17 +180,25 @@ public class MySQLDataAccess implements DataAccess{
             default -> throw new SQLException("Unsupported parameter type: " + param.getClass());
         }
     }
-    private GameData pullGameData throws SQLException(ResultSet results)
+    private GameData pullGameData (ResultSet results) throws SQLException
     {
         var gameString = results.getString("game");
         var gameID = results.getInt("gameID");
         var gameName = results.getString("gameName");
         var whitePlayerName = results.getString("whitePlayerName");
         var blackPlayerName = results.getString("blackPlayerName");
-        var game = chess.ChessGame.fromString(gs);
+        var game = gameFromString(gameString);
         var state = GameData.State.valueOf(results.getString("state"));
-
         return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
+    }
+
+    private String gameToString(GameData gameData)
+    {
+        return new Gson().toJson(gameData);
+    }
+    private ChessGame gameFromString(String gameString)
+    {
+        return new Gson().fromJson(gameString, ChessGame.class);
     }
     private final String[] createStatements = {
             """
