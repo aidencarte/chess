@@ -71,6 +71,28 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
+        try(var conn = DatabaseManager.getConnection())
+        {
+            try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
+                    "blackPlayerName, game, state FROM `game` WHERE gameID=?"))
+            {
+                preparedStatement.setString(1, gameID);
+                try(var results = preparedStatement.executeQuery()){
+                    if(results.next())
+                    {
+                        var password = results.getString("password");
+                        var email = results.getString("email");
+                        return new UserData(username, password, email);
+                    }
+                }
+            }
+
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+
         return null;
     }
 
@@ -155,6 +177,18 @@ public class MySQLDataAccess implements DataAccess{
             case null -> preparedStatement.setNull(index, NULL);
             default -> throw new SQLException("Unsupported parameter type: " + param.getClass());
         }
+    }
+    private GameData pullGameData throws SQLException(ResultSet results)
+    {
+        var gameString = results.getString("game");
+        var gameID = results.getInt("gameID");
+        var gameName = results.getString("gameName");
+        var whitePlayerName = results.getString("whitePlayerName");
+        var blackPlayerName = results.getString("blackPlayerName");
+        var game = chess.ChessGame.fromString(gs);
+        var state = GameData.State.valueOf(results.getString("state"));
+
+        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
     }
     private final String[] createStatements = {
             """
