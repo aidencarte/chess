@@ -9,14 +9,18 @@ import java.util.Map;
 
 public class Server {
 
-    private final EndpointHandler endpointHandler;
-    private final Javalin javalin;
+    private EndpointHandler endpointHandler;
+    private Javalin javalin;
     public Server() {
-        DataAccess dataAccess = new MemoryDataAccess();
-        this.endpointHandler = new EndpointHandler(dataAccess);
-        this.javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        endpointHandler.register(javalin);
-        javalin.exception(DataAccessException.class, this::exceptionHandler);
+        try {
+            DataAccess dataAccess = new MySQLDataAccess();
+            this.endpointHandler = new EndpointHandler(dataAccess);
+            this.javalin = Javalin.create(config -> config.staticFiles.add("web"));
+            endpointHandler.register(javalin);
+            javalin.exception(DataAccessException.class, this::exceptionHandler);
+        } catch (DataAccessException e) {
+            System.out.println("Something went wrong " + e.getMessage());
+        }
 
 
         // Register your endpoints and exception handlers here.
