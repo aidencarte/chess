@@ -249,10 +249,6 @@ public class MySQLDataAccess implements DataAccess{
         return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
     }
 
-    private String gameToString(GameData gameData)
-    {
-        return new Gson().toJson(gameData);
-    }
     private ChessGame gameFromString(String gameString)
     {
         return new Gson().fromJson(gameString, ChessGame.class);
