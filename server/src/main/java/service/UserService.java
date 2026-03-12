@@ -16,7 +16,7 @@ public class UserService extends Service {
             var eUser = new RegisterRequest(registerRequest.username(),ePassword,
                     registerRequest.email());
             if(dataAccess.getUser(registerRequest.username())!=null) {
-                throw new DataAccessException(403, "Username already taken");
+                throw new DataAccessException(403, "Username already taken/duplicate");
             }
             UserData newUser = dataAccess.createUser(eUser);
             return dataAccess.createAuth(newUser.username());
