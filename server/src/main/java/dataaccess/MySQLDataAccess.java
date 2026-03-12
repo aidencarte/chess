@@ -29,6 +29,9 @@ public class MySQLDataAccess implements DataAccess{
         {
             UserData newUser = new UserData(registerRequest.username(), registerRequest.password(),
                     registerRequest.email());
+            executeUpdate("INSERT into 'user' (username, password, email) VALUES (?, ?, ?)",
+                    newUser.username(), newUser.password(), newUser.email());
+            return newUser;
 
         }
         return null;
@@ -36,6 +39,28 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
+        try(var conn = DatabaseManager.getConnection())
+        {
+            try(var preparedStatement = conn.prepareStatement("SELECT password, email from 'user'" +
+                    "WHERE username=?"))
+            {
+                preparedStatement.setString(1, username);
+                try(var results = preparedStatement.executeQuery()){
+                    if(results.next())
+                    {
+                        var password = results.getString("password");
+                        var email = results.getString("email");
+                        return new UserData(username, password, email);
+                    }
+                }
+            }
+
+        }
+        catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+
         return null;
     }
 
@@ -114,7 +139,11 @@ public class MySQLDataAccess implements DataAccess{
             return 0;
 
         }
-        catch (Exception e)
+        catch (SQLIntegrityConstraintViolationException e)
+        {
+            throw new DataAccessException(403, e.getMessage());
+        }
+        catch(SQLException e)
         {
             throw new DataAccessException(e.getMessage());
         }
