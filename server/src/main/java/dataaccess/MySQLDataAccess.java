@@ -123,7 +123,7 @@ public class MySQLDataAccess implements DataAccess{
                 game.gameName(),
                 game.whiteUsername(),
                 game.blackUsername(),
-                game.game().toString(),
+                gameToString(game),
                 game.state().toString(),
                 game.gameID());
         return game;
@@ -166,13 +166,15 @@ public class MySQLDataAccess implements DataAccess{
     }
 
     private void configureDatabase() throws DataAccessException {
+        try{
         DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createStatements) {
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
+        }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
@@ -242,6 +244,7 @@ public class MySQLDataAccess implements DataAccess{
     {
         return new Gson().fromJson(gameString, ChessGame.class);
     }
+
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS `authentication` (

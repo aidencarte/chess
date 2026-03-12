@@ -39,7 +39,6 @@ public class EndpointHandler {
     private void clearDb(Context context) throws DataAccessException {
         adminService.clearApplication();
         context.json("{}");
-        context.status(200);
     }
 
     private void registerUser(Context context) throws DataAccessException {

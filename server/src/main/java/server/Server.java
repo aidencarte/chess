@@ -9,13 +9,12 @@ import java.util.Map;
 
 public class Server {
 
-    private EndpointHandler endpointHandler;
     private Javalin javalin;
     public Server() {
         try {
-            DataAccess dataAccess = new MySQLDataAccess();
-            this.endpointHandler = new EndpointHandler(dataAccess);
             this.javalin = Javalin.create(config -> config.staticFiles.add("web"));
+            DataAccess dataAccess = new MySQLDataAccess();
+            EndpointHandler endpointHandler = new EndpointHandler(dataAccess);
             endpointHandler.register(javalin);
             javalin.exception(DataAccessException.class, this::exceptionHandler);
         } catch (DataAccessException e) {
@@ -30,8 +29,11 @@ public class Server {
 
 
     public int run(int desiredPort) {
-        javalin.start(desiredPort);
-        return javalin.port();
+        if(javalin != null) {
+            javalin.start(desiredPort);
+            return javalin.port();
+        }
+        return 0;
     }
     private void exceptionHandler(DataAccessException e, Context context) {
         var body = new Gson().toJson(Map.of("message", String.format("Error: %s", e.getMessage())));
