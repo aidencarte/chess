@@ -188,15 +188,15 @@
             {
                 currentPosition = new ChessPosition(i,j);
                 currentPiece = myBoard.getPiece(currentPosition);
-                if(currentPiece != null && currentPiece.getTeamColor()!=teamColor)
-                {
-                    return false;
+                if(currentPiece==null || currentPiece.getTeamColor()==teamColor){
+                    continue;
                 }
-                currentMoves = currentPiece.pieceMoves(myBoard, currentPosition);
-                for(ChessMove chessMove : currentMoves)
-                {   //for some reason position comparing does not work here
-                    if(kingPosition.getRow() == chessMove.getEndPosition().getRow() &&
-                            kingPosition.getColumn() == chessMove.getEndPosition().getColumn()){
+
+                    currentMoves = currentPiece.pieceMoves(myBoard, currentPosition);
+                    for(ChessMove chessMove : currentMoves)
+                    {   //for some reason position comparing does not work here
+                        if(kingPosition.getRow() == chessMove.getEndPosition().getRow() &&
+                                kingPosition.getColumn() == chessMove.getEndPosition().getColumn()){
                             return true;
                         }
                     }
@@ -213,8 +213,7 @@
             for(int i = 1;i<=8;i++) {
                 for (int j = 1; j <= 8; j++) {
                     currentPosition = new ChessPosition(i,j);
-                    if(myBoard.getPiece(currentPosition)!=null && myBoard.getPiece(currentPosition).getPieceType()
-                            == ChessPiece.PieceType.KING &&
+                    if(myBoard.getPiece(currentPosition)!=null && myBoard.getPiece(currentPosition).getPieceType()== ChessPiece.PieceType.KING &&
                             myBoard.getPiece(currentPosition).getTeamColor()==teamColor){
                         kingPosition = currentPosition;
                     }
