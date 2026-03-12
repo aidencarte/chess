@@ -166,8 +166,8 @@ public class MySQLDataAccess implements DataAccess{
     }
 
     @Override
-    public void deleteAuth(String username) throws DataAccessException {
-
+    public void deleteAuth(String authToken) throws DataAccessException {
+        executeUpdate("DELETE from 'auth' WHERE authToken=?", authToken);
     }
 
     private void configureDatabase() throws DataAccessException {
