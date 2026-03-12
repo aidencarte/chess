@@ -69,7 +69,7 @@ public class MySQLDataAccess implements DataAccess{
         var game = new ChessGame();
         game.myBoard.resetBoard();
         var state = GameData.State.UNDECIDED;
-        var id = executeUpdate("INSERT INTO 'game' (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+        var id = executeUpdate("INSERT INTO games (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
                 gameName,
                 null,
                 null,
@@ -87,7 +87,7 @@ public class MySQLDataAccess implements DataAccess{
         try(var conn = DatabaseManager.getConnection())
         {
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
-                    "blackPlayerName, game, state FROM `game` WHERE gameID=?"))
+                    "blackPlayerName, game, state FROM games WHERE gameID=?"))
             {
                 preparedStatement.setInt(1, gameID);
                 try(var results = preparedStatement.executeQuery()){
@@ -112,7 +112,7 @@ public class MySQLDataAccess implements DataAccess{
         var result = new ArrayList<GameData>();
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName," +
-                    " whitePlayerName, blackPlayerName, game, state FROM `game`"))
+                    " whitePlayerName, blackPlayerName, game, state FROM games"))
             {
                 try(var resultSet = preparedStatement.executeQuery())
                 {
@@ -131,7 +131,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData updateGame(GameData game) throws DataAccessException {
-        executeUpdate("UPDATE `game` set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
+        executeUpdate("UPDATE games set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
                 "game=?, state=? WHERE gameID=?",
                 game.gameName(),
                 game.whiteUsername(),

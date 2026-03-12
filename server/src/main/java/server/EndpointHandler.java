@@ -119,8 +119,6 @@ public class EndpointHandler {
         if (joinGameReq.playerColor == null) {
             throw new DataAccessException(400, "bad request");
         }
-
-
         GameData game = gameService.joinGame(authToken, joinGameReq.playerColor, joinGameReq.gameID);
 
         context.json(new Gson().toJson(game));
