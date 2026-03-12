@@ -1,18 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
 import model.*;
 import com.google.gson.Gson;
 import java.sql.*;
-import chess.ChessPiece;
 
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 
 import static java.sql.Types.NULL;
 
