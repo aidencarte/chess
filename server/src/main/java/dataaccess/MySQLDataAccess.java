@@ -18,9 +18,9 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void clear() throws DataAccessException {
-        executeCommand("DELETE FROM 'user'");
-        executeCommand("DELETE FROM 'auths'");
-        executeCommand("DELETE FROM 'games'");
+        executeCommand("TRUNCATE user");
+        executeCommand("TRUNCATE auths");
+        executeCommand("TRUNCATE games");
     }
 
     @Override
@@ -29,7 +29,7 @@ public class MySQLDataAccess implements DataAccess{
         {
             UserData newUser = new UserData(registerRequest.username(), registerRequest.password(),
                     registerRequest.email());
-            executeUpdate("INSERT into 'user' (username, password, email) VALUES (?, ?, ?)",
+            executeUpdate("INSERT into user (username, password, email) VALUES (?, ?, ?)",
                     newUser.username(), newUser.password(), newUser.email());
             return newUser;
 
@@ -41,11 +41,11 @@ public class MySQLDataAccess implements DataAccess{
     public UserData getUser(String username) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            try(var preparedStatement = conn.prepareStatement("SELECT password, email from 'user'" +
-                    "WHERE username=?"))
+            String statement = "SELECT password, email from user WHERE username=?";
+            try(PreparedStatement preparedStatement = conn.prepareStatement(statement))
             {
                 preparedStatement.setString(1, username);
-                try(var results = preparedStatement.executeQuery()){
+                try(ResultSet results = preparedStatement.executeQuery()){
                     if(results.next())
                     {
                         var password = results.getString("password");
@@ -132,7 +132,7 @@ public class MySQLDataAccess implements DataAccess{
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
         var auth = new AuthData(DataAccess.generateToken(), username);
-        executeUpdate("INSERT into 'auth' (authtoken, username) VALUES (?, ?)",
+        executeUpdate("INSERT into auths (authtoken, username) VALUES (?, ?)",
                 auth.authToken(),auth.username());
         return auth;
     }
@@ -141,7 +141,7 @@ public class MySQLDataAccess implements DataAccess{
     public AuthData getAuth(String authToken) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            try(var preparedStatement = conn.prepareStatement("SELECT username from 'auth' where authToken=?")){
+            try(var preparedStatement = conn.prepareStatement("SELECT username from auths where authToken=?")){
                 preparedStatement.setString(1, authToken);
                 try(var results = preparedStatement.executeQuery()){
                     if(results.next())
@@ -162,7 +162,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        executeUpdate("DELETE from 'auth' WHERE authToken=?", authToken);
+        executeUpdate("DELETE from auths WHERE authToken=?", authToken);
     }
 
     private void configureDatabase() throws DataAccessException {
@@ -247,14 +247,14 @@ public class MySQLDataAccess implements DataAccess{
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS `authentication` (
+            CREATE TABLE IF NOT EXISTS `auths` (
               `authToken` varchar(128) NOT NULL,
               `username` varchar(128) NOT NULL,
               PRIMARY KEY (`authToken`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
             """
-            CREATE TABLE IF NOT EXISTS  `game` (
+            CREATE TABLE IF NOT EXISTS  `games` (
               `gameID` int NOT NULL AUTO_INCREMENT,
               `gameName` varchar(50) DEFAULT NULL,
               `whitePlayerName` varchar(100) DEFAULT NULL,
@@ -269,8 +269,7 @@ public class MySQLDataAccess implements DataAccess{
               `username` varchar(128) NOT NULL,
               `password` varchar(128) NOT NULL,
               `email` varchar(128) NOT NULL,
-              PRIMARY KEY (`username`),
-              UNIQUE KEY `username_UNIQUE` (`username`)
+              PRIMARY KEY (`username`)
             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """};
     public String toString() {
