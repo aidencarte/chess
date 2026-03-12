@@ -50,7 +50,7 @@ public class MySQLDataAccess implements DataAccess{
     }
 
     @Override
-    public AuthData createAuth(String username) {
+    public AuthData createAuth(String username) throws DataAccessException {
         return null;
     }
 
@@ -80,27 +80,12 @@ public class MySQLDataAccess implements DataAccess{
     private final String[] createStatements = {
             """
                 CREATE TABLE IF NOT EXISTS  users (
-                  `username` varchar(128) NOT NULL,
-                  'password' varchar(128) NOT NULL,
-                  'email' varchar(128) NOT NULL,
-                  PRIMARY KEY (`username`),
-                  UNIQUE KEY 'username_UNIQUE' ('username')
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                
-                CREATE TABLE IF NOT EXISTS  auths (
-                  `authToken` varchar(128) NOT NULL,
-                  'username' varchar(128) NOT NULL,
-                  PRIMARY KEY (`authToken`),
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                
-                CREATE TABLE IF NOT EXISTS  games (
-                  `gameID` int NOT NULL AUTO_INCREMENT,
-                  'gameName' varchar(128) DEFAULT NULL,
-                  'whitePlayerName' varchar(128) DEFAULT NULL,
-                  'blackPlayerName' varchar(128) DEFAULT NULL,
-                  'game' longtext NOT NULL,
-                  'state' varchar(50) DEFAULT NULL,
-                  PRIMARY KEY (`gameID`),
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `username` varchar(256) NOT NULL,
+                  `json` TEXT DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  INDEX(type),
+                  INDEX(name)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
                 """
     };
