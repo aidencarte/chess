@@ -79,15 +79,31 @@ public class MySQLDataAccess implements DataAccess{
 
     private final String[] createStatements = {
             """
-                CREATE TABLE IF NOT EXISTS  users (
-                  `id` int NOT NULL AUTO_INCREMENT,
-                  `username` varchar(256) NOT NULL,
-                  `json` TEXT DEFAULT NULL,
-                  PRIMARY KEY (`id`),
-                  INDEX(type),
-                  INDEX(name)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """
-    };
+            CREATE TABLE IF NOT EXISTS `authentication` (
+              `authToken` varchar(128) NOT NULL,
+              `username` varchar(128) NOT NULL,
+              PRIMARY KEY (`authToken`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS  `game` (
+              `gameID` int NOT NULL AUTO_INCREMENT,
+              `gameName` varchar(50) DEFAULT NULL,
+              `whitePlayerName` varchar(100) DEFAULT NULL,
+              `blackPlayerName` varchar(100) DEFAULT NULL,
+              `game` longtext NOT NULL,
+              `state` varchar(50) DEFAULT NULL,
+              PRIMARY KEY (`gameID`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS `user` (
+              `username` varchar(128) NOT NULL,
+              `password` varchar(128) NOT NULL,
+              `email` varchar(128) NOT NULL,
+              PRIMARY KEY (`username`),
+              UNIQUE KEY `username_UNIQUE` (`username`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """};
 
 }
