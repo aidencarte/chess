@@ -3,8 +3,7 @@ package dataaccess;
 import model.*;
 import com.google.gson.Gson;
 import java.sql.*;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
+
 
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +15,9 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void clear() throws DataAccessException {
-
+        executeCommand("DELETE FROM 'user'");
+        executeCommand("DELETE FROM 'auths'");
+        executeCommand("DELETE FROM 'games'");
     }
 
     @Override
@@ -74,6 +75,16 @@ public class MySQLDataAccess implements DataAccess{
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
+
+    private void executeCommand(String statement) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("Failed to execute command: %s", e.getMessage()));
         }
     }
 
