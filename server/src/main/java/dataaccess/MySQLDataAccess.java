@@ -123,7 +123,7 @@ public class MySQLDataAccess implements DataAccess{
                 game.gameName(),
                 game.whiteUsername(),
                 game.blackUsername(),
-                gameToString(game),
+                game.toString(),
                 game.state().toString(),
                 game.gameID());
         return game;
@@ -193,7 +193,7 @@ public class MySQLDataAccess implements DataAccess{
     private int executeUpdate(String statement, Object... params) throws DataAccessException{
         try(var conn = DatabaseManager.getConnection())
         {
-            var preparedStatement = conn.prepareStatement(statement);
+            var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
             for(int i = 0; i < params.length;i++)
             {
                 setIndex(preparedStatement,i+1,params[i]);
@@ -273,5 +273,9 @@ public class MySQLDataAccess implements DataAccess{
               UNIQUE KEY `username_UNIQUE` (`username`)
             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """};
+    public String toString() {
+        return String.format("MySQL - %s", DatabaseManager.dbName());
+    }
+
 
 }

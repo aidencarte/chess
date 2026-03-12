@@ -1,5 +1,7 @@
     package chess;
 
+    import com.google.gson.Gson;
+
     import java.util.Collection;
     import java.util.HashSet;
     import java.util.Objects;
@@ -297,4 +299,11 @@
         public int hashCode() {
             return Objects.hash(currentTurn, myBoard);
         }
+
+        @Override
+        public String toString()
+        {
+            return new Gson().toJson(this);
+        }
+
     }
