@@ -9,6 +9,7 @@ import java.sql.*;
 import chess.ChessPiece;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +101,24 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        var result = new ArrayList<GameData>();
+        try(var conn = DatabaseManager.getConnection()){
+            try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName," +
+                    " whitePlayerName, blackPlayerName, game, state FROM `game`"))
+            {
+                try(var resultSet = preparedStatement.executeQuery())
+                {
+                    while(resultSet.next())
+                    {
+                        var checkedGameData = pullGameData(resultSet);
+                        result.add(checkedGameData);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override
