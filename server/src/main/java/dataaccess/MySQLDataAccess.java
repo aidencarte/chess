@@ -136,7 +136,10 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
-        return null;
+        var auth = new AuthData(DataAccess.generateToken(), username);
+        executeUpdate("INSERT into 'auth' (authtoken, username) VALUES (?, ?)",
+                auth.authToken(),auth.username());
+        return auth;
     }
 
     @Override
