@@ -116,14 +116,22 @@ public class MySQLDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e.getMessage());
         }
         return result;
     }
 
     @Override
     public GameData updateGame(GameData game) throws DataAccessException {
-        return null;
+        executeUpdate("UPDATE `game` set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
+                "game=?, state=? WHERE gameID=?",
+                game.gameName(),
+                game.whiteUsername(),
+                game.blackUsername(),
+                game.game().toString(),
+                game.state().toString(),
+                game.gameID());
+        return game;
     }
 
     @Override
