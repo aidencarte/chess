@@ -12,7 +12,7 @@ public class AuthService extends Service {
     public LoginResult createAuth(LoginRequest loginRequest) throws DataAccessException {
 
             UserData loggedInUser = dataAccess.getUser(loginRequest.username());
-            if (loggedInUser != null && BCrypt.checkpw(loggedInUser.password(), loginRequest.password())) {
+            if (loggedInUser != null && BCrypt.checkpw(loginRequest.password(), loggedInUser.password())) {
                 AuthData user =  dataAccess.createAuth(loggedInUser.username());
                 return new LoginResult(user.username(),user.authToken());
             }

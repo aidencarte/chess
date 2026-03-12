@@ -69,7 +69,7 @@ public class MySQLDataAccess implements DataAccess{
         var game = new ChessGame();
         game.myBoard.resetBoard();
         var state = GameData.State.UNDECIDED;
-        var id = executeUpdate("INSERT INTO `game` (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+        var id = executeUpdate("INSERT INTO 'game' (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
                 gameName,
                 null,
                 null,
