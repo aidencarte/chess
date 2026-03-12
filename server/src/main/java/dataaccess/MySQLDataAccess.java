@@ -7,6 +7,9 @@ import java.sql.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+
+import static java.sql.Types.NULL;
 
 public class MySQLDataAccess implements DataAccess{
     public MySQLDataAccess() throws DataAccessException{
@@ -22,6 +25,12 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public UserData createUser(RegisterRequest registerRequest) throws DataAccessException {
+        if(registerRequest.username() != null)
+        {
+            UserData newUser = new UserData(registerRequest.username(), registerRequest.password(),
+                    registerRequest.email());
+
+        }
         return null;
     }
 
@@ -88,6 +97,36 @@ public class MySQLDataAccess implements DataAccess{
         }
     }
 
+    private int executeUpdate(String statement, Object... params) throws DataAccessException{
+        try(var conn = DatabaseManager.getConnection())
+        {
+            var preparedStatement = conn.prepareStatement(statement);
+            for(int i = 0; i < params.length;i++)
+            {
+                setIndex(preparedStatement,i+1,params[i]);
+            }
+            preparedStatement.executeUpdate();
+            var results = preparedStatement.getGeneratedKeys();
+            if(results.next())
+            {
+                return results.getInt(1);
+            }
+            return 0;
+
+        }
+        catch (Exception e)
+        {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+    private void setIndex(java.sql.PreparedStatement preparedStatement, int index, Object param) throws SQLException {
+        switch (param) {
+            case String s -> preparedStatement.setString(index, s);
+            case Integer x -> preparedStatement.setInt(index, x);
+            case null -> preparedStatement.setNull(index, NULL);
+            default -> throw new SQLException("Unsupported parameter type: " + param.getClass());
+        }
+    }
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS `authentication` (
