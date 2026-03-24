@@ -8,6 +8,7 @@ import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Collection;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -29,10 +30,10 @@ public class ServerFacade {
     }
 
 
-    public PetList listPets() throws ResponseException {
-        var request = buildRequest("GET", "/pet", null);
+    public Collection listGames() throws ResponseException {
+        var request = buildRequest("GET", "/game", null);
         var response = sendRequest(request);
-        return handleResponse(response, PetList.class);
+        return handleResponse(response, Collection.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
