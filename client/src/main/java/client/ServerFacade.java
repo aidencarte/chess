@@ -36,6 +36,12 @@ public class ServerFacade {
         return handleResponse(response, Collection.class);
     }
 
+    public LoginResult loginUser(LoginRequest loginRequest) throws ResponseException{
+        var request = buildRequest("POST", "/session", loginRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, LoginResult.class);
+    }
+
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
