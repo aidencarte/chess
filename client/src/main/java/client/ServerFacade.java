@@ -9,6 +9,8 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collection;
+import java.util.Map;
+import EndpointHandler.JoinGameReq
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -46,6 +48,16 @@ public class ServerFacade {
     {
         var request = buildRequest("DELETE", "/session", authToken);
         sendRequest(request);
+    }
+
+    public Map<> createGame(String gameName, AuthData authData)
+    {
+        var request = buildRequest("POST", "/game", gameName);
+    }
+
+    public joinGame(JoinGameReq joinGameReq)
+    {
+
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {

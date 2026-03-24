@@ -1,6 +1,6 @@
 package server;
 
-import chess.*;
+import      chess.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
