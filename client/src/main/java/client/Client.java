@@ -3,6 +3,7 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 import ui.ClientState;
@@ -12,7 +13,8 @@ import static ui.EscapeSequences.*;
 public class Client {
     private final ServerFacade server;
     private ClientState state = ClientState.LOGGED_OUT;
-    private String authToken;
+    private String authToken = null;
+    private String username = null;
     public Client(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
     }
@@ -73,7 +75,7 @@ public class Client {
         }
         if (params.length >= 1) {
             state = ClientState.LOGGED_IN;
-            var username = getStringParam("username", params, 0);
+            username = getStringParam("username", params, 0);
             var password = getStringParam("password", params, 1);
             LoginResult loginResult = server.loginUser(new LoginRequest(username, password));
             state = ClientState.LOGGED_IN;
@@ -148,46 +150,58 @@ public class Client {
         return String.format("Created game: %s", gameName);
     }
 
-
-
-    public String adoptPet(String... params) throws ResponseException {
+    public String join(String ... params) throws Exception
+    {
         assertSignedIn();
-        if (params.length == 1) {
-            try {
-                int id = Integer.parseInt(params[0]);
-                Pet pet = getPet(id);
-                if (pet != null) {
-                    server.deletePet(id);
-                    return String.format("%s says %s", pet.name(), pet.sound());
-                }
-            } catch (NumberFormatException ignored) {
-            }
+        if(state != ClientState.LOGGED_IN)
+        {
+            return "Must not be in game to join another";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <pet id>");
-    }
-
-    public String adoptAllPets() throws ResponseException {
-        assertSignedIn();
-        var buffer = new StringBuilder();
-        for (Pet pet : server.listPets()) {
-            buffer.append(String.format("%s says %s%n", pet.name(), pet.sound()));
+        var game = getGame(Integer.parseInt(getStringParam("game id", params, 0)));
+        if(game == null)
+        {
+            return "Could not find that game";
         }
+        var colorString = getStringParam("team color", params, 1);
+        var teamColor = verifyColorString(colorString.toUpperCase(), game);
+        if(teamColor == ChessGame.TeamColor.WHITE && game.whiteUsername()==null)
+        {
+            game.setWhite(username);
+            state = ClientState.WHITE;
+            return String.format("Joined %s as %s\n", game.gameName(), teamColor);
+        }
+        if(teamColor == ChessGame.TeamColor.BLACK && game.whiteUsername()==null)
+        {
+            game.setBlack(username);
+            state = ClientState.BLACK;
+            return String.format("Joined %s as %s\n", game.gameName(), teamColor);
+        }
+        return "Could not join game";
 
-        server.deleteAllPets();
-        return buffer.toString();
+
     }
 
-    public String signOut() throws ResponseException {
-        assertSignedIn();
-        ws.leavePetShop(visitorName);
-        state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
+
+    private ChessGame.TeamColor verifyColorString(String colorString, GameData game) throws Exception
+    {
+        if(colorString.equals("WHITE"))
+        {
+            return ChessGame.TeamColor.WHITE;
+        }
+        if(colorString.equals("BLACK"))
+        {
+            return ChessGame.TeamColor.BLACK;
+        }
+        throw new Exception("Color input invalid");
     }
 
-    private Pet getPet(int id) throws ResponseException {
-        for (Pet pet : server.listPets()) {
-            if (pet.id() == id) {
-                return pet;
+
+
+
+    private GameData getGame(int id) throws ResponseException {
+        for (GameData game : server.listGames(authToken)) {
+            if (game.gameID() == id) {
+                return game;
             }
         }
         return null;
