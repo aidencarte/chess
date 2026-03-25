@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -10,7 +11,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collection;
 import java.util.Map;
-import EndpointHandler.JoinGameReq
+
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -58,9 +59,12 @@ public class ServerFacade {
         return handleResponse(response, GameData.class);
     }
 
-    public joinGame(JoinGameReq joinGameReq)
+    public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor) throws ResponseException
     {
-
+        var joinGameReq = new JoinGameRequest(teamColor, gameID);
+        var request = buildRequest("PUT", "/game", joinGameReq);
+        var response = sendRequest(request, authToken);
+        return handleResponse(response, GameData.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {

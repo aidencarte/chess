@@ -108,18 +108,15 @@ public class EndpointHandler {
         context.status(200);
     }
 
-    static class JoinGameReq {
-        ChessGame.TeamColor playerColor;
-        int gameID;
-    }
+
 
     private void joinGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
-        JoinGameReq joinGameReq = getBodyObject(context, JoinGameReq.class);
-        if (joinGameReq.playerColor == null) {
+        JoinGameRequest joinGameReq = getBodyObject(context, JoinGameRequest.class);
+        if ( joinGameReq.playerColor() == null) {
             throw new DataAccessException(400, "bad request");
         }
-        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor, joinGameReq.gameID);
+        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor(), joinGameReq.gameID());
 
         context.json(new Gson().toJson(game));
         context.status(200);
