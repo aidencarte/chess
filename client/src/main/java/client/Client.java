@@ -123,10 +123,19 @@ public class Client {
     public String list() throws ResponseException {
         assertSignedIn();
         GameData[] games = server.listGames(authToken);
+        if(games.length == 0)
+        {
+            return "No games are being played. Type create to be the first!";
+        }
         var result = new StringBuilder();
-        var gson = new Gson();
+        result.append("Games:\n");
         for (GameData game : games) {
-            result.append(gson.toJson(game)).append('\n');
+            result.append("_____________________________");
+            var gameName = game.gameName();
+            var blackName = game.blackUsername()!=null ? game.blackUsername() : "Available";
+            var whiteName = game.whiteUsername()!=null ? game.whiteUsername() : "Available";
+            String curGame = String.format("Game: %s\n White: %s\n Black: %s\n", gameName, whiteName, blackName);
+            result.append(curGame);
         }
         return result.toString();
     }
@@ -138,6 +147,8 @@ public class Client {
         server.createGame(gameName, authToken);
         return String.format("Created game: %s", gameName);
     }
+
+
 
     public String adoptPet(String... params) throws ResponseException {
         assertSignedIn();
