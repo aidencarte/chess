@@ -22,37 +22,40 @@ public class ServerFacade {
 
     public RegisterResult register(RegisterRequest registerRequest) throws ResponseException {
         var request = buildRequest("POST", "/user", registerRequest);
-        var response = sendRequest(request);
+        var response = sendRequest(request, null);
         return handleResponse(response, RegisterResult.class);
     }
 
     public void clearDb(int id) throws ResponseException {
         var request = buildRequest("DELETE", "/db", null);
-        var response = sendRequest(request);
+        var response = sendRequest(request, null);
     }
 
 
-    public Collection listGames() throws ResponseException {
+    public GameData[] listGames(String authToken) throws ResponseException {
         var request = buildRequest("GET", "/game", null);
-        var response = sendRequest(request);
-        return handleResponse(response, Collection.class);
+        var response = sendRequest(request, authToken);
+        var handledResponse = handleResponse(response, GameData[].class);
+        return handledResponse != null ? handledResponse : new GameData[0];
     }
 
     public LoginResult loginUser(LoginRequest loginRequest) throws ResponseException{
         var request = buildRequest("POST", "/session", loginRequest);
-        var response = sendRequest(request);
+        var response = sendRequest(request, null);
         return handleResponse(response, LoginResult.class);
     }
 
     public void logoutUser(String authToken) throws ResponseException
     {
         var request = buildRequest("DELETE", "/session", authToken);
-        sendRequest(request);
+        sendRequest(request, authToken);
     }
 
-    public Map<> createGame(String gameName, AuthData authData)
+    public GameData createGame(String gameName, AuthData authData) throws ResponseException
     {
         var request = buildRequest("POST", "/game", gameName);
+        var response = sendRequest(request, authData.authToken());
+        return handleResponse(response, GameData.class);
     }
 
     public joinGame(JoinGameReq joinGameReq)
@@ -78,7 +81,7 @@ public class ServerFacade {
         }
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
+    private HttpResponse<String> sendRequest(HttpRequest request, String authToken) throws ResponseException {
         try {
             return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
