@@ -52,12 +52,12 @@ public class Client {
             return switch (cmd) {
                 case "login" -> login(params);
                 case "register" -> register(params);
-                case "logout" -> listPets();
-                case "list" -> signOut();
-                case "join" -> adoptPet(params);
-                case "observe" -> adoptAllPets();
+                case "logout" -> logout();
+                case "list" -> list();
+                case "join" -> join(params);
+                case "observe" -> observe(params);
                 case "redraw" -> redraw();
-                case "create" -> createGame();
+                case "create" -> createGame(params);
                 case "quit" -> "quit";
                 default -> "Unknown Command";
             };
@@ -99,18 +99,26 @@ public class Client {
         return String.format("Logged in as %s", username);
     }
 
-
-    public String rescuePet(String... params) throws ResponseException {
-        assertSignedIn();
-        if (params.length >= 2) {
-            String name = params[0];
-            PetType type = PetType.valueOf(params[1].toUpperCase());
-            var pet = new Pet(0, name, type);
-            pet = server.addPet(pet);
-            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
+    public String logout(String ... params) throws Exception
+    {
+        if(state == ClientState.LOGGED_OUT)
+        {
+            return "Unable to logout, you are not logged in";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
+        if(state != ClientState.LOGGED_IN)
+        {
+            return "Unable to logout, must not be in game";
+        }
+        server.logoutUser(authToken);
+        state = ClientState.LOGGED_OUT;
+        authToken = null;
+        return "Logged out";
+
     }
+
+
+
+
 
     public String listPets() throws ResponseException {
         assertSignedIn();
@@ -184,7 +192,7 @@ public class Client {
     }
 
     private void assertSignedIn() throws ResponseException {
-        if (state == ClientState.LOGGED_OUT) {
+        if (state == ClientState.LOGGED_OUT || authToken == null) {
             throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
         }
     }
