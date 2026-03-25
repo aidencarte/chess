@@ -1,9 +1,11 @@
 package client;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.*;
 import ui.ClientState;
@@ -15,6 +17,7 @@ public class Client {
     private ClientState state = ClientState.LOGGED_OUT;
     private String authToken = null;
     private String username = null;
+    private GameData myGameData = null;
     public Client(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
     }
@@ -164,23 +167,34 @@ public class Client {
         }
         var colorString = getStringParam("team color", params, 1);
         var teamColor = verifyColorString(colorString.toUpperCase(), game);
-        if(teamColor == ChessGame.TeamColor.WHITE && game.whiteUsername()==null)
+        if((teamColor == ChessGame.TeamColor.WHITE && game.whiteUsername()!=null) ||
+                (teamColor == ChessGame.TeamColor.BLACK && game.blackUsername()!=null))
+        {
+            return "Could not join game";
+        }
+        if(teamColor == ChessGame.TeamColor.WHITE)
         {
             game.setWhite(username);
             state = ClientState.WHITE;
-            return String.format("Joined %s as %s\n", game.gameName(), teamColor);
+
         }
-        if(teamColor == ChessGame.TeamColor.BLACK && game.whiteUsername()==null)
+        if(teamColor == ChessGame.TeamColor.BLACK)
         {
             game.setBlack(username);
             state = ClientState.BLACK;
-            return String.format("Joined %s as %s\n", game.gameName(), teamColor);
         }
-        return "Could not join game";
+        myGameData = game;
+        printGame(teamColor, null);
+        return String.format("Joined %s as %s\n", game.gameName(), teamColor);
 
 
     }
 
+    private void printGame(ChessGame.TeamColor teamColor, Collection<ChessPosition> highlights)
+    {
+        System.out.println("\n");
+        System.out.print()
+    }
 
     private ChessGame.TeamColor verifyColorString(String colorString, GameData game) throws Exception
     {
