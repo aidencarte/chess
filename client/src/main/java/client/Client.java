@@ -54,10 +54,10 @@ public class Client {
                 case "register" -> register(params);
                 case "logout" -> logout();
                 case "list" -> list();
+                case "create" -> createGame(params);
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "redraw" -> redraw();
-                case "create" -> createGame(params);
                 case "quit" -> "quit";
                 default -> "Unknown Command";
             };
@@ -131,6 +131,14 @@ public class Client {
         return result.toString();
     }
 
+    public String createGame(String ... params) throws Exception
+    {
+        assertSignedIn();
+        var gameName = getStringParam("game name", params, 0);
+        server.createGame(gameName, authToken);
+        return String.format("Created game: %s", gameName);
+    }
+
     public String adoptPet(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
@@ -175,20 +183,34 @@ public class Client {
     }
 
     public String help() {
-        if (state == State.SIGNEDOUT) {
+        switch(state) {
+            case LOGGED_OUT:
             return """
-                    - signIn <yourname>
+                    - login <username> <password>
+                    - register <username> <password> <email>
+                    - help
                     - quit
                     """;
+            case LOGGED_IN:
+            return """
+                    - list
+                    - adopt <pet id>
+                    - rescue <name> <CAT|DOG|FROG|FISH>
+                    - adoptAll
+                    - signOut
+                    - quit
+                    """;
+            case WHITE,BLACK:
+                return """
+                        -
+                        -
+                        """;
+            case OBSERVING:
+                return """
+                        -
+                        - leave
+                        """;
         }
-        return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
-                """;
     }
 
     private void assertSignedIn() throws ResponseException {
