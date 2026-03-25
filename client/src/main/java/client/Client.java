@@ -5,25 +5,20 @@ import java.util.Scanner;
 
 import com.google.gson.Gson;
 import model.*;
-import server.ServerFacade;
-import client.websocket.WebSocketFacade;
-import webSocketMessages.Notification;
+import ui.ClientState;
 
-import static client.EscapeSequences.*;
+import static ui.EscapeSequences.*;
 
-public class PetClient implements NotificationHandler {
-    private String visitorName = null;
+public class Client {
     private final ServerFacade server;
-    private final WebSocketFacade ws;
-    private State state = State.SIGNEDOUT;
-
-    public PetClient(String serverUrl) throws ResponseException {
+    private ClientState state = ClientState.LOGGED_OUT;
+    private String authToken;
+    public Client(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
-        ws = new WebSocketFacade(serverUrl, this);
     }
 
     public void run() {
-        System.out.println(LOGO + " Welcome to the pet store. Sign in to start.");
+        System.out.println(WHITE_KNIGHT + " Welcome to CHESS. Sign in to start! " + WHITE_KNIGHT);
         System.out.print(help());
 
         Scanner scanner = new Scanner(System.in);
@@ -34,7 +29,7 @@ public class PetClient implements NotificationHandler {
 
             try {
                 result = eval(line);
-                System.out.print(BLUE + result);
+                System.out.printf("%s%s\n", RESET_TEXT_COLOR, result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -44,13 +39,8 @@ public class PetClient implements NotificationHandler {
     }
 
 
-    public void notify(Notification notification) {
-        System.out.println(RED + notification.message());
-        printPrompt();
-    }
-
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_BLUE);
     }
 
 
@@ -60,29 +50,55 @@ public class PetClient implements NotificationHandler {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "signin" -> signIn(params);
-                case "rescue" -> rescuePet(params);
-                case "list" -> listPets();
-                case "signout" -> signOut();
-                case "adopt" -> adoptPet(params);
-                case "adoptall" -> adoptAllPets();
+                case "login" -> login(params);
+                case "register" -> register(params);
+                case "logout" -> listPets();
+                case "list" -> signOut();
+                case "join" -> adoptPet(params);
+                case "observe" -> adoptAllPets();
+                case "redraw" -> redraw();
+                case "create" -> createGame();
                 case "quit" -> "quit";
-                default -> help();
+                default -> "Unknown Command";
             };
-        } catch (ResponseException ex) {
+        } catch (Exception ex) {
             return ex.getMessage();
         }
     }
 
-    public String signIn(String... params) throws ResponseException {
-        if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
-            ws.enterPetShop(visitorName);
-            return String.format("You signed in as %s.", visitorName);
+    public String login(String... params) throws Exception {
+        if(state != ClientState.LOGGED_OUT)
+        {
+            return "You are not logged in";
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        if (params.length >= 1) {
+            state = ClientState.LOGGED_IN;
+            var username = getStringParam("username", params, 0);
+            var password = getStringParam("password", params, 1);
+            LoginResult loginResult = server.loginUser(new LoginRequest(username, password));
+            state = ClientState.LOGGED_IN;
+            authToken = loginResult.authToken();
+
+            return String.format("You signed in as %s.", loginResult.username());
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <username> <password>");
     }
+
+    public String register(String... params) throws Exception{
+        if(state != ClientState.LOGGED_OUT)
+        {
+            return "Must be logged out to register";
+        }
+        var username = getStringParam("username", params, 0);
+        var password = getStringParam("username", params, 1);
+        var email = getStringParam("email", params, 2);
+
+        var registerResult = server.register(new RegisterRequest(username, password, email));
+        authToken = registerResult.authToken();
+        state = ClientState.LOGGED_IN;
+        return String.format("Logged in as %s", username);
+    }
+
 
     public String rescuePet(String... params) throws ResponseException {
         assertSignedIn();
@@ -168,8 +184,16 @@ public class PetClient implements NotificationHandler {
     }
 
     private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNEDOUT) {
+        if (state == ClientState.LOGGED_OUT) {
             throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
         }
+    }
+    private String getStringParam(String paramName, String[] params, int pos) throws Exception
+    {
+        if(params.length <= pos)
+        {
+            throw new Exception(String.format("Could not find %s", paramName));
+        }
+        return params[pos];
     }
 }
