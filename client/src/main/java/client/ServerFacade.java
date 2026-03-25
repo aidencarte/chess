@@ -22,57 +22,58 @@ public class ServerFacade {
     }
 
     public RegisterResult register(RegisterRequest registerRequest) throws ResponseException {
-        var request = buildRequest("POST", "/user", registerRequest);
-        var response = sendRequest(request, null);
+        var request = buildRequest("POST", "/user", registerRequest, null);
+        var response = sendRequest(request);
         return handleResponse(response, RegisterResult.class);
     }
 
     public void clearDb(int id) throws ResponseException {
-        var request = buildRequest("DELETE", "/db", null);
-        var response = sendRequest(request, null);
+        var request = buildRequest("DELETE", "/db", null, null);
+        var response = sendRequest(request);
     }
 
 
     public GameData[] listGames(String authToken) throws ResponseException {
-        var request = buildRequest("GET", "/game", null);
-        var response = sendRequest(request, authToken);
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = sendRequest(request);
         var handledResponse = handleResponse(response, GameData[].class);
         return handledResponse != null ? handledResponse : new GameData[0];
     }
 
     public LoginResult loginUser(LoginRequest loginRequest) throws ResponseException{
-        var request = buildRequest("POST", "/session", loginRequest);
-        var response = sendRequest(request, null);
+        var request = buildRequest("POST", "/session", loginRequest, null);
+        var response = sendRequest(request);
         return handleResponse(response, LoginResult.class);
     }
 
     public void logoutUser(String authToken) throws ResponseException
     {
-        var request = buildRequest("DELETE", "/session", authToken);
-        sendRequest(request, authToken);
+        var request = buildRequest("DELETE", "/session", null, authToken);
+        sendRequest(request);
     }
 
-    public GameData createGame(String gameName, AuthData authData) throws ResponseException
+    public GameData createGame(String gameName, String authToken) throws ResponseException
     {
-        var request = buildRequest("POST", "/game", gameName);
-        var response = sendRequest(request, authData.authToken());
+        var request = buildRequest("POST", "/game", gameName, authToken);
+        var response = sendRequest(request);
         return handleResponse(response, GameData.class);
     }
 
     public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor) throws ResponseException
     {
         var joinGameReq = new JoinGameRequest(teamColor, gameID);
-        var request = buildRequest("PUT", "/game", joinGameReq);
-        var response = sendRequest(request, authToken);
+        var request = buildRequest("PUT", "/game", joinGameReq, authToken);
+        var response = sendRequest(request);
         return handleResponse(response, GameData.class);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+            request.setHeader("Authorization", authToken);
         }
         return request.build();
     }
@@ -85,7 +86,7 @@ public class ServerFacade {
         }
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request, String authToken) throws ResponseException {
+    private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
         try {
             return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
