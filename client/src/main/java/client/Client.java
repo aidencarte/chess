@@ -19,6 +19,7 @@ public class Client {
     private String authToken = null;
     private String username = null;
     private GameData myGameData = null;
+    private ChessGame.TeamColor myTeamColor = ChessGame.TeamColor.WHITE;
     public Client(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
     }
@@ -186,6 +187,7 @@ public class Client {
         }
         myGameData = game;
         printGame(teamColor, null);
+        myTeamColor = teamColor;
         return String.format("Joined %s as %s\n", game.gameName(), teamColor);
 
 
@@ -205,6 +207,16 @@ public class Client {
         return String.format("Joined %s as observer", myGameData.gameName());
     }
 
+    public String redraw(String ... params) throws Exception
+    {
+        assertSignedIn();
+        if(state == ClientState.LOGGED_IN)
+        {
+            throw new Exception("Must be in game to draw board");
+        }
+        printGame(myTeamColor,null);
+        return "";
+    }
 
     private void printGame(ChessGame.TeamColor teamColor, Collection<ChessPosition> highlights)
     {
