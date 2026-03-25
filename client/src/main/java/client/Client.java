@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.*;
@@ -190,10 +191,70 @@ public class Client {
 
     }
 
+    public String observe(String ... params) throws Exception
+    {
+        assertSignedIn();
+        if(state != ClientState.LOGGED_IN)
+        {
+            throw new Exception("Already in game");
+        }
+        var gameID = Integer.parseInt(getStringParam("gameID", params, 0));
+        myGameData = getGame(gameID);
+        state = ClientState.OBSERVING;
+        printGame(ChessGame.TeamColor.WHITE, null);
+        return String.format("Joined %s as observer", myGameData.gameName());
+    }
+
+
     private void printGame(ChessGame.TeamColor teamColor, Collection<ChessPosition> highlights)
     {
-        System.out.println("\n");
-        System.out.print()
+        var board = myGameData.game().getBoard();
+        var outputString = new StringBuilder();
+        boolean isWhite = teamColor == ChessGame.TeamColor.WHITE;
+
+        outputString.append(addColumnLabels(isWhite));
+        outputString.append("\n");
+        for (int row = 0; row <= 7; row++)
+        {
+            int rowIndex = isWhite ? 8 - row : row + 1;
+            outputString.append(rowIndex).append(" ");
+            for (int col = 0; col <=7; col++)
+            {
+                int colIndex = isWhite ? col + 1 : 8 - col;
+                ChessPosition curPos = new ChessPosition(rowIndex, colIndex);
+                ChessPiece curPiece = board.getPiece(curPos);
+                boolean isLight = (rowIndex + colIndex) % 2 == 1;
+                String background = isLight ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_DARK_GREEN;
+                String pieceString = " ";
+                if(curPiece!=null)
+                {
+                    pieceString = teamColor == ChessGame.TeamColor.WHITE
+                            ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_DARK_GREY;
+
+                }
+                outputString.append(background).append(" ").append(pieceString).append(" ").append(RESET_TEXT_COLOR);
+            }
+            outputString.append(" ").append(rowIndex).append("\n");
+        }
+        outputString.append(addColumnLabels(isWhite));
+        System.out.println(outputString);
+    }
+
+    private String addColumnLabels(boolean isWhite) {
+        var outputString = new StringBuilder();
+        outputString.append("   ");
+        for (int i = 0; i <=7; i++)
+        {
+            char colIndex;
+            if(isWhite) {
+                colIndex = (char) ('a' + i);
+            }
+            else {
+                colIndex = (char) ('h' - i);
+            }
+            outputString.append(" ").append(colIndex).append(" ");
+        }
+        return outputString.toString();
     }
 
     private ChessGame.TeamColor verifyColorString(String colorString, GameData game) throws Exception
@@ -250,6 +311,7 @@ public class Client {
                         - leave
                         """;
         }
+        return "Something went wrong with help";
     }
 
     private void assertSignedIn() throws ResponseException {
