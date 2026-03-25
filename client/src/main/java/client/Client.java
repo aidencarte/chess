@@ -120,13 +120,13 @@ public class Client {
 
 
 
-    public String listPets() throws ResponseException {
+    public String list() throws ResponseException {
         assertSignedIn();
-        PetList pets = server.listPets();
+        GameData[] games = server.listGames(authToken);
         var result = new StringBuilder();
         var gson = new Gson();
-        for (Pet pet : pets) {
-            result.append(gson.toJson(pet)).append('\n');
+        for (GameData game : games) {
+            result.append(gson.toJson(game)).append('\n');
         }
         return result.toString();
     }
