@@ -87,12 +87,12 @@ public class EndpointHandler {
 
     private void createGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
-        GameData gameData = getBodyObject(context, GameData.class);
-        if ((gameData.gameName()==null)) {
+        String gameName = getBodyObject(context, String.class);
+        if (gameName.isEmpty()) {
             throw new DataAccessException(400, "bad request");
         }
 
-        GameData game = gameService.createGame(authToken, gameData.gameName());
+        GameData game = gameService.createGame(authToken, gameName);
 
         var response = Map.of("gameID", game.gameID());
         context.json(new Gson().toJson(response));

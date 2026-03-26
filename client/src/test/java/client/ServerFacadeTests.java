@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import server.Server;
 import model.*;
@@ -14,6 +15,7 @@ public class ServerFacadeTests {
 
     private static RegisterRequest existingUser;
     private static RegisterRequest newUser;
+    private static LoginRequest existingLogin= new LoginRequest("ExistingUser", "existingUserPassword");
     private static RegisterResult goodUserResult = new RegisterResult("NewUser", "newUserPassword");
     private static String createRequest;
     private String existingAuth;
@@ -71,6 +73,78 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () ->
                 facade.loginUser(new LoginRequest("username", "bogusPassword")));
     }
+
+@Test
+    public void logoutPositive() throws Exception{
+        facade.logoutUser(existingAuth);
+        assertThrows(Exception.class, () -> facade.createGame("w", existingAuth));
+    }
+    @Test
+    public void logoutNegative() throws Exception{
+        assertThrows(Exception.class, () -> facade.logoutUser("nonsense"));
+    }
+
+
+
+    @Test
+    public void createGame() throws Exception {
+        GameData game = facade.createGame("game name", existingAuth);
+        assertTrue(game.gameID() != 0);
+    }
+
+
+    @Test
+    public void createGameBadAuth() {
+        assertThrows(Exception.class, () -> facade.createGame("game name", "nonsense"));
+    }
+
+
+    @Test
+    public void listGames() throws Exception {
+
+        var games = facade.listGames(existingAuth);
+        assertEquals(0, games.length);
+
+        var gameName = "Example Game";
+        facade.createGame(gameName, existingAuth);
+        var updatedGames = facade.listGames(existingAuth);
+        assertEquals(1, updatedGames.length);
+        assertEquals(gameName, updatedGames[0].gameName());
+    }
+
+
+    @Test
+    public void listGamesBadAuth() {
+        assertThrows(Exception.class, () -> facade.listGames("nonsense"));
+    }
+
+
+    @Test
+    public void joinGame() throws Exception {
+        var gameName = "Example Game";
+        var game = facade.createGame(gameName, existingAuth);
+        var joinedGame = facade.joinGame(existingAuth, game.gameID(), ChessGame.TeamColor.WHITE);
+        assertEquals(game.gameID(), joinedGame.gameID());
+        assertEquals(existingUser.username(), joinedGame.whiteUsername());
+    }
+
+    @Test
+    public void joinGameNoColor() throws Exception {
+        var gameName = "Example Game name";
+        var game = facade.createGame(gameName, existingAuth);
+        assertThrows(Exception.class, () -> facade.joinGame(existingAuth, game.gameID(), null));
+    }
+
+    @Test
+    public void joinGameBadAuth() {
+        assertThrows(Exception.class, () -> facade.joinGame("nonsense", 3, ChessGame.TeamColor.WHITE));
+    }
+
+    @Test
+    public void joinGameBadID() throws Exception {
+        assertThrows(Exception.class, () -> facade.joinGame(existingAuth, 3, ChessGame.TeamColor.WHITE));
+    }
+
 
 
 }
