@@ -27,7 +27,7 @@ public class ServerFacade {
         return handleResponse(response, RegisterResult.class);
     }
 
-    public void clearDb(int id) throws ResponseException {
+    public void clearDb() throws ResponseException {
         var request = buildRequest("DELETE", "/db", null, null);
         var response = sendRequest(request);
     }
@@ -73,6 +73,10 @@ public class ServerFacade {
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+
+        }
+        if(authToken != null)
+        {
             request.setHeader("Authorization", authToken);
         }
         return request.build();
@@ -98,8 +102,8 @@ public class ServerFacade {
         var status = response.statusCode();
         if (!isSuccessful(status)) {
             var body = response.body();
-            if (body != null) {
-                throw ResponseException.fromJson(body);
+            if (body == null) {
+                throw ResponseException.fromJson(null);
             }
 
             throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);
