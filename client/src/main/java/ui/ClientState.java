@@ -8,8 +8,6 @@ public enum ClientState {
     BLACK,
     OBSERVING;
 
-    public Boolean isTurn(ChessGame.TeamColor teamColor){
-        return(teamColor.toString().equals(this.toString()));
-    }
+
 
 }

@@ -69,36 +69,43 @@ public class PieceMovesCalculator {
                 possibleMoves = smallMoveCalc(moveDirections,curRow, curCol);
                 break;
             case QUEEN, BISHOP, ROOK:
-                for (int[] moveDirection : moveDirections) {
-                    invalidMove = false;
-                    while(!invalidMove)
-                    {
-                        possiblePosition = new ChessPosition(curRow + moveDirection[0],
-                                curCol + moveDirection[1]);
-                        if(!capturedPieceLastTurn) {
-                            if (isValidSquare(possiblePosition))
-                            {possibleMoves.add(new ChessMove(start, possiblePosition, null));
-                            }
-                            else {
-                                invalidMove = true;
-                            }
-                        }
-                        else
-                        {
-                            invalidMove = true;
-                            capturedPieceLastTurn = false;
-                        }
-                        curRow += moveDirection[0];
-                        curCol += moveDirection[1];
-                    }
-                    curRow = start.getRow();
-                    curCol = start.getColumn();
-                }
+                extracted(moveDirections, curRow, curCol, possibleMoves);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
         return possibleMoves;
+    }
+
+    private void extracted(ArrayList<int[]> moveDirections, int curRow, int curCol, HashSet<ChessMove> possibleMoves) {
+        ChessPosition possiblePosition;
+        boolean invalidMove;
+        for (int[] moveDirection : moveDirections) {
+            invalidMove = false;
+            while(!invalidMove)
+            {
+                possiblePosition = new ChessPosition(curRow + moveDirection[0],
+                        curCol + moveDirection[1]);
+                if(!capturedPieceLastTurn) {
+                    if (isValidSquare(possiblePosition))
+                    {
+                        possibleMoves.add(new ChessMove(start, possiblePosition, null));
+                    }
+                    else {
+                        invalidMove = true;
+                    }
+                }
+                else
+                {
+                    invalidMove = true;
+                    capturedPieceLastTurn = false;
+                }
+                curRow += moveDirection[0];
+                curCol += moveDirection[1];
+            }
+            curRow = start.getRow();
+            curCol = start.getColumn();
+        }
     }
 
     private HashSet<ChessMove> pawnMoveCalc(ArrayList<int[]> moveDirections, int curRow, int curCol){
