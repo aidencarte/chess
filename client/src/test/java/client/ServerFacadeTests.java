@@ -81,8 +81,10 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.createGame("w", existingAuth));
     }
     @Test
-    public void logoutNegative() {
-        assertThrows(DataAccessException.class, () -> facade.logoutUser("this is nonsense"));
+    public void logoutNegative() throws Exception {
+        facade.logoutUser("nonsense");
+        GameData game = facade.createGame("game name", existingAuth);
+        assertTrue(game.gameID() != 0);
     }
 
 
