@@ -312,7 +312,6 @@ public class Client {
                     - create <Game Name>
                     - list
                     - join  <GameID> <Color>
-                    - signOut
                     - quit
                     """;
             case WHITE,BLACK:
