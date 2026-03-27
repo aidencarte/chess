@@ -78,7 +78,7 @@ public class Client {
     public String login(String... params) throws Exception {
         if(state != ClientState.LOGGED_OUT)
         {
-            return "You are not logged in";
+            return "You are not logged out";
         }
         if (params.length >= 1) {
             username = getStringParam("username", params, 0);
@@ -171,7 +171,7 @@ public class Client {
             return "Could not find that game";
         }
         var colorString = getStringParam("team color", params, 1);
-        var teamColor = verifyColorString(colorString.toUpperCase(), game);
+        var teamColor = verifyColorString(colorString.toUpperCase());
         if((teamColor == ChessGame.TeamColor.WHITE && game.whiteUsername()!=null) ||
                 (teamColor == ChessGame.TeamColor.BLACK && game.blackUsername()!=null))
         {
@@ -188,7 +188,7 @@ public class Client {
             game.setBlack(username);
             state = ClientState.BLACK;
         }
-        myGameData = game;
+        myGameData = server.joinGame(authToken, game.gameID(), teamColor);
         printGame(teamColor, null);
         myTeamColor = teamColor;
         return String.format("Joined %s as %s\n", game.gameName(), teamColor);
@@ -272,7 +272,7 @@ public class Client {
         return outputString.toString();
     }
 
-    private ChessGame.TeamColor verifyColorString(String colorString, GameData game) throws Exception
+    private ChessGame.TeamColor verifyColorString(String colorString) throws Exception
     {
         if(colorString.equals("WHITE"))
         {

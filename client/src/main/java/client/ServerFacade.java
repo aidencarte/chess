@@ -57,7 +57,8 @@ public class ServerFacade {
 
     public GameData createGame(String gameName, String authToken) throws ResponseException
     {
-        var request = buildRequest("POST", "/game", gameName, authToken);
+        var newGame = new GameData(0, null, null, gameName, null, null);
+        var request = buildRequest("POST", "/game", newGame, authToken);
         var response = sendRequest(request);
         return handleResponse(response, GameData.class);
     }
@@ -111,6 +112,7 @@ public class ServerFacade {
             String message = switch (status) {
                 case 401 -> "Unauthorized";
                 case 403 -> "Username already taken";
+                case 500 -> "Server error";
                 default -> "Forgot to add case for status " + status;
             };
             throw new ResponseException(ResponseException.fromHttpStatusCode(status), message);
