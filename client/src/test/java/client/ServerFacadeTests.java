@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import dataaccess.DataAccessException;
 import org.junit.jupiter.api.*;
 import server.Server;
 import model.*;
@@ -80,8 +81,8 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.createGame("w", existingAuth));
     }
     @Test
-    public void logoutNegative() throws Exception{
-        assertThrows(Exception.class, () -> facade.logoutUser("nonsense"));
+    public void logoutNegative() {
+        assertThrows(DataAccessException.class, () -> facade.logoutUser("this is nonsense"));
     }
 
 

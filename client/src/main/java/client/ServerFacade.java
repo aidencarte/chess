@@ -10,6 +10,7 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -34,10 +35,12 @@ public class ServerFacade {
 
 
     public GameData[] listGames(String authToken) throws ResponseException {
+        record Response(GameData[] games) {
+        }
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
-        var handledResponse = handleResponse(response, GameData[].class);
-        return handledResponse != null ? handledResponse : new GameData[0];
+        var handledResponse = handleResponse(response, Response.class);
+        return handledResponse != null ? handledResponse.games : new GameData[0];
     }
 
     public LoginResult loginUser(LoginRequest loginRequest) throws ResponseException{
@@ -46,7 +49,7 @@ public class ServerFacade {
         return handleResponse(response, LoginResult.class);
     }
 
-    public void logoutUser(String authToken) throws ResponseException
+    public void logoutUser(String authToken) throws Exception
     {
         var request = buildRequest("DELETE", "/session", null, authToken);
         sendRequest(request);
@@ -105,8 +108,12 @@ public class ServerFacade {
             if (body == null) {
                 throw ResponseException.fromJson(null);
             }
-
-            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);
+            String message = switch (status) {
+                case 401 -> "Unauthorized";
+                case 403 -> "Username already taken";
+                default -> "Forgot to add case for status " + status;
+            };
+            throw new ResponseException(ResponseException.fromHttpStatusCode(status), message);
         }
 
         if (responseClass != null) {

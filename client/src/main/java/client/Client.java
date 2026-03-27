@@ -19,6 +19,7 @@ public class Client {
     private String authToken = null;
     private String username = null;
     private GameData myGameData = null;
+
     private ChessGame.TeamColor myTeamColor = ChessGame.TeamColor.WHITE;
     public Client(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -65,6 +66,7 @@ public class Client {
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "redraw" -> redraw();
+                case "help" -> help();
                 case "quit" -> "quit";
                 default -> "Unknown Command";
             };
@@ -79,12 +81,11 @@ public class Client {
             return "You are not logged in";
         }
         if (params.length >= 1) {
-            state = ClientState.LOGGED_IN;
             username = getStringParam("username", params, 0);
             var password = getStringParam("password", params, 1);
             LoginResult loginResult = server.loginUser(new LoginRequest(username, password));
-            state = ClientState.LOGGED_IN;
             authToken = loginResult.authToken();
+            state = ClientState.LOGGED_IN;
 
             return String.format("You signed in as %s.", loginResult.username());
         }
@@ -106,8 +107,9 @@ public class Client {
         return String.format("Logged in as %s", username);
     }
 
-    public String logout(String ... params) throws Exception
+    public String logout() throws Exception
     {
+
         if(state == ClientState.LOGGED_OUT)
         {
             return "Unable to logout, you are not logged in";
@@ -116,6 +118,7 @@ public class Client {
         {
             return "Unable to logout, must not be in game";
         }
+
         server.logoutUser(authToken);
         state = ClientState.LOGGED_OUT;
         authToken = null;
@@ -129,7 +132,7 @@ public class Client {
 
     public String list() throws ResponseException {
         assertSignedIn();
-        GameData[] games = server.listGames(authToken);
+        var games = server.listGames(authToken);
         if(games.length == 0)
         {
             return "No games are being played. Type create to be the first!";
@@ -162,7 +165,7 @@ public class Client {
         {
             return "Must not be in game to join another";
         }
-        var game = getGame(Integer.parseInt(getStringParam("game id", params, 0)));
+        var game = getGame((getStringParam("gameName", params, 0)));
         if(game == null)
         {
             return "Could not find that game";
@@ -200,8 +203,8 @@ public class Client {
         {
             throw new Exception("Already in game");
         }
-        var gameID = Integer.parseInt(getStringParam("gameID", params, 0));
-        myGameData = getGame(gameID);
+        var gameName = (getStringParam("gameName", params, 0));
+        myGameData = getGame(gameName);
         state = ClientState.OBSERVING;
         printGame(ChessGame.TeamColor.WHITE, null);
         return String.format("Joined %s as observer", myGameData.gameName());
@@ -224,8 +227,7 @@ public class Client {
         var outputString = new StringBuilder();
         boolean isWhite = teamColor == ChessGame.TeamColor.WHITE;
 
-        outputString.append(addColumnLabels(isWhite));
-        outputString.append("\n");
+        outputString.append(addColumnLabels(isWhite)).append("\n");
         for (int row = 0; row <= 7; row++)
         {
             int rowIndex = isWhite ? 8 - row : row + 1;
@@ -240,13 +242,14 @@ public class Client {
                 String pieceString = " ";
                 if(curPiece!=null)
                 {
-                    pieceString = teamColor == ChessGame.TeamColor.WHITE
-                            ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_DARK_GREY;
+                    pieceString = (curPiece.getTeamColor()== ChessGame.TeamColor.WHITE
+                            ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK) + curPiece;
 
                 }
                 outputString.append(background).append(" ").append(pieceString).append(" ").append(RESET_TEXT_COLOR);
             }
-            outputString.append(" ").append(rowIndex).append("\n");
+            outputString.append(SET_BG_COLOR_BLACK).append(" ").append(rowIndex);
+            outputString.append("\n");
         }
         outputString.append(addColumnLabels(isWhite));
         System.out.println(outputString);
@@ -254,7 +257,7 @@ public class Client {
 
     private String addColumnLabels(boolean isWhite) {
         var outputString = new StringBuilder();
-        outputString.append("   ");
+        outputString.append("  ");
         for (int i = 0; i <=7; i++)
         {
             char colIndex;
@@ -285,9 +288,9 @@ public class Client {
 
 
 
-    private GameData getGame(int id) throws ResponseException {
+    private GameData getGame(String gameName) throws ResponseException {
         for (GameData game : server.listGames(authToken)) {
-            if (game.gameID() == id) {
+            if (game.gameName().equals(gameName.toLowerCase())) {
                 return game;
             }
         }
@@ -305,10 +308,10 @@ public class Client {
                     """;
             case LOGGED_IN:
             return """
+                    - logout
+                    - create <Game Name>
                     - list
-                    - adopt <pet id>
-                    - rescue <name> <CAT|DOG|FROG|FISH>
-                    - adoptAll
+                    - join  <GameID> <Color>
                     - signOut
                     - quit
                     """;
