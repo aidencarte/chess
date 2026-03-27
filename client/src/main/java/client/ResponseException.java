@@ -29,9 +29,7 @@ public class ResponseException extends Exception {
         return new ResponseException(status, message);
     }
 
-    public Code code() {
-        return code;
-    }
+
 
     public static Code fromHttpStatusCode(int httpStatusCode) {
         return switch (httpStatusCode) {
