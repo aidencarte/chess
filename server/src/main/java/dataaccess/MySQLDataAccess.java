@@ -74,7 +74,7 @@ public class MySQLDataAccess implements DataAccess{
         try(var conn = DatabaseManager.getConnection())
         {
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
-                    "blackPlayerName, game, state FROM `game` WHERE gameID=?"))
+                    "blackPlayerName, game, state FROM `games` WHERE gameID=?"))
             {
                 preparedStatement.setInt(1, gameID);
                 try(var results = preparedStatement.executeQuery()){
@@ -99,7 +99,7 @@ public class MySQLDataAccess implements DataAccess{
         var result = new ArrayList<GameData>();
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName," +
-                    " whitePlayerName, blackPlayerName, game, state FROM `game`"))
+                    " whitePlayerName, blackPlayerName, game, state FROM `games`"))
             {
                 try(var resultSet = preparedStatement.executeQuery())
                 {
@@ -118,7 +118,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData updateGame(GameData game) throws DataAccessException {
-        executeUpdate("UPDATE `game` set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
+        executeUpdate("UPDATE `games` set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
                 "game=?, state=? WHERE gameID=?",
                 game.gameName(),
                 game.whiteUsername(),
@@ -132,7 +132,7 @@ public class MySQLDataAccess implements DataAccess{
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
         var auth = new AuthData(DataAccess.generateToken(), username);
-        executeUpdate("INSERT into 'auth' (authtoken, username) VALUES (?, ?)",
+        executeUpdate("INSERT into 'auths' (authToken, username) VALUES (?, ?)",
                 auth.authToken(),auth.username());
         return auth;
     }
@@ -141,7 +141,7 @@ public class MySQLDataAccess implements DataAccess{
     public AuthData getAuth(String authToken) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            try(var preparedStatement = conn.prepareStatement("SELECT username from 'auth' where authToken=?")){
+            try(var preparedStatement = conn.prepareStatement("SELECT username from 'auths' where authToken=?")){
                 preparedStatement.setString(1, authToken);
                 try(var results = preparedStatement.executeQuery()){
                     if(results.next())
@@ -162,7 +162,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        executeUpdate("DELETE from 'auth' WHERE authToken=?", authToken);
+        executeUpdate("DELETE from 'auths' WHERE authToken=?", authToken);
     }
 
     private void configureDatabase() throws DataAccessException {
@@ -247,14 +247,14 @@ public class MySQLDataAccess implements DataAccess{
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS `authentication` (
+            CREATE TABLE IF NOT EXISTS `auths` (
               `authToken` varchar(128) NOT NULL,
               `username` varchar(128) NOT NULL,
               PRIMARY KEY (`authToken`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
             """
-            CREATE TABLE IF NOT EXISTS  `game` (
+            CREATE TABLE IF NOT EXISTS  `games` (
               `gameID` int NOT NULL AUTO_INCREMENT,
               `gameName` varchar(50) DEFAULT NULL,
               `whitePlayerName` varchar(100) DEFAULT NULL,
