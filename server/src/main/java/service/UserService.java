@@ -11,14 +11,15 @@ public class UserService extends Service {
 
 
     public AuthData register(RegisterRequest registerRequest) throws DataAccessException {
-        try {
+
             var ePassword = BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt());
             var eUser = new RegisterRequest(registerRequest.username(),ePassword,
                     registerRequest.email());
+            if(dataAccess.getUser(registerRequest.username())!=null) {
+                throw new DataAccessException(403, "Username already taken/duplicate");
+            }
             UserData newUser = dataAccess.createUser(eUser);
             return dataAccess.createAuth(newUser.username());
-        } catch (DataAccessException ex) {
-            throw new DataAccessException(403, "Unable to register user");
-        }
+
     }
 }

@@ -18,9 +18,9 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void clear() throws DataAccessException {
-        executeCommand("DELETE FROM 'user'");
-        executeCommand("DELETE FROM 'auths'");
-        executeCommand("DELETE FROM 'games'");
+        executeCommand("TRUNCATE user");
+        executeCommand("TRUNCATE auths");
+        executeCommand("TRUNCATE games");
     }
 
     @Override
@@ -29,7 +29,7 @@ public class MySQLDataAccess implements DataAccess{
         {
             UserData newUser = new UserData(registerRequest.username(), registerRequest.password(),
                     registerRequest.email());
-            executeUpdate("INSERT into 'user' (username, password, email) VALUES (?, ?, ?)",
+            executeUpdate("INSERT into user (username, password, email) VALUES (?, ?, ?)",
                     newUser.username(), newUser.password(), newUser.email());
             return newUser;
 
@@ -41,8 +41,8 @@ public class MySQLDataAccess implements DataAccess{
     public UserData getUser(String username) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            try(var preparedStatement = conn.prepareStatement("SELECT password, email from 'user'" +
-                    "WHERE username=?"))
+            String statement = "SELECT password, email FROM user WHERE username=?";
+            try(PreparedStatement preparedStatement = conn.prepareStatement(statement))
             {
                 preparedStatement.setString(1, username);
                 try(var results = preparedStatement.executeQuery()){
@@ -66,15 +66,28 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData createGame(String gameName) throws DataAccessException {
+        var game = new ChessGame();
+        game.myBoard.resetBoard();
+        var state = GameData.State.UNDECIDED;
+        var id = executeUpdate("INSERT INTO games (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+                gameName,
+                null,
+                null,
+                game.toString(),
+                state.toString());
+        if (id != 0) {
+            return new GameData(id, null, null, gameName, game, state);
+        }
         return null;
     }
+
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
-                    "blackPlayerName, game, state FROM `games` WHERE gameID=?"))
+                    "blackPlayerName, game, state FROM games WHERE gameID=?"))
             {
                 preparedStatement.setInt(1, gameID);
                 try(var results = preparedStatement.executeQuery()){
@@ -99,7 +112,7 @@ public class MySQLDataAccess implements DataAccess{
         var result = new ArrayList<GameData>();
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName," +
-                    " whitePlayerName, blackPlayerName, game, state FROM `games`"))
+                    " whitePlayerName, blackPlayerName, game, state FROM games"))
             {
                 try(var resultSet = preparedStatement.executeQuery())
                 {
@@ -118,7 +131,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public GameData updateGame(GameData game) throws DataAccessException {
-        executeUpdate("UPDATE `games` set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
+        executeUpdate("UPDATE games set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
                 "game=?, state=? WHERE gameID=?",
                 game.gameName(),
                 game.whiteUsername(),
@@ -132,7 +145,7 @@ public class MySQLDataAccess implements DataAccess{
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
         var auth = new AuthData(DataAccess.generateToken(), username);
-        executeUpdate("INSERT into 'auths' (authToken, username) VALUES (?, ?)",
+        executeUpdate("INSERT into auths (authtoken, username) VALUES (?, ?)",
                 auth.authToken(),auth.username());
         return auth;
     }
@@ -141,7 +154,7 @@ public class MySQLDataAccess implements DataAccess{
     public AuthData getAuth(String authToken) throws DataAccessException {
         try(var conn = DatabaseManager.getConnection())
         {
-            try(var preparedStatement = conn.prepareStatement("SELECT username from 'auths' where authToken=?")){
+            try(var preparedStatement = conn.prepareStatement("SELECT username from auths where authToken=?")){
                 preparedStatement.setString(1, authToken);
                 try(var results = preparedStatement.executeQuery()){
                     if(results.next())
@@ -162,7 +175,7 @@ public class MySQLDataAccess implements DataAccess{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        executeUpdate("DELETE from 'auths' WHERE authToken=?", authToken);
+        executeUpdate("DELETE from auths WHERE authToken=?", authToken);
     }
 
     private void configureDatabase() throws DataAccessException {
@@ -236,10 +249,6 @@ public class MySQLDataAccess implements DataAccess{
         return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
     }
 
-    private String gameToString(GameData gameData)
-    {
-        return new Gson().toJson(gameData);
-    }
     private ChessGame gameFromString(String gameString)
     {
         return new Gson().fromJson(gameString, ChessGame.class);
@@ -269,8 +278,7 @@ public class MySQLDataAccess implements DataAccess{
               `username` varchar(128) NOT NULL,
               `password` varchar(128) NOT NULL,
               `email` varchar(128) NOT NULL,
-              PRIMARY KEY (`username`),
-              UNIQUE KEY `username_UNIQUE` (`username`)
+              PRIMARY KEY (`username`)
             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """};
     public String toString() {

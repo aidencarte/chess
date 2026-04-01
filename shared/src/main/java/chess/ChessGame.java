@@ -14,7 +14,7 @@
      */
     public class ChessGame {
         private TeamColor currentTurn;
-        private ChessBoard myBoard;
+        public ChessBoard myBoard;
 
 
         public ChessGame() {
@@ -68,7 +68,8 @@
 
                 if(myBoard.getPiece(possibleMove.getEndPosition())==null ||
                         (myBoard.getPiece(possibleMove.getEndPosition())!=null &&
-                                myBoard.getPiece(possibleMove.getEndPosition()).getTeamColor()!=piece.getTeamColor())) {
+                                myBoard.getPiece(possibleMove.getEndPosition()).getTeamColor()
+                                        !=piece.getTeamColor())) {
                     myBoard.addPiece(possibleMove.getEndPosition(), piece);
                     myBoard.addPiece(possibleMove.getStartPosition(), null);
                     if (!isInCheck(piece.getTeamColor())){
@@ -187,8 +188,10 @@
             {
                 currentPosition = new ChessPosition(i,j);
                 currentPiece = myBoard.getPiece(currentPosition);
-                if(currentPiece != null && currentPiece.getTeamColor()!=teamColor)
-                {
+                if(currentPiece==null || currentPiece.getTeamColor()==teamColor){
+                    continue;
+                }
+
                     currentMoves = currentPiece.pieceMoves(myBoard, currentPosition);
                     for(ChessMove chessMove : currentMoves)
                     {   //for some reason position comparing does not work here
@@ -197,7 +200,7 @@
                             return true;
                         }
                     }
-                }
+
             }
            }
             return false;

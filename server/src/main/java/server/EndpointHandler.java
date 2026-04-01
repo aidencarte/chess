@@ -1,6 +1,6 @@
 package server;
 
-import chess.*;
+import      chess.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -88,7 +88,7 @@ public class EndpointHandler {
     private void createGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         GameData gameData = getBodyObject(context, GameData.class);
-        if ((gameData.gameName()==null)) {
+        if (gameData.gameName()==null || gameData.gameName().isEmpty()) {
             throw new DataAccessException(400, "bad request");
         }
 
@@ -108,20 +108,15 @@ public class EndpointHandler {
         context.status(200);
     }
 
-    static class JoinGameReq {
-        ChessGame.TeamColor playerColor;
-        int gameID;
-    }
+
 
     private void joinGame(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
-        JoinGameReq joinGameReq = getBodyObject(context, JoinGameReq.class);
-        if (joinGameReq.playerColor == null) {
+        JoinGameRequest joinGameReq = getBodyObject(context, JoinGameRequest.class);
+        if ( joinGameReq.playerColor() == null) {
             throw new DataAccessException(400, "bad request");
         }
-
-
-        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor, joinGameReq.gameID);
+        GameData game = gameService.joinGame(authToken, joinGameReq.playerColor(), joinGameReq.gameID());
 
         context.json(new Gson().toJson(game));
         context.status(200);
