@@ -1,5 +1,6 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Scanner;
@@ -75,10 +76,25 @@ public class Client {
             return ex.getMessage();
         }
     }
-        public String highlight(String...params) throws Exception{
-        var chessPosition = new ChessPosition(params[0]);
-        return null;
-                }
+        public String highlight(String...params) throws Exception {
+            ChessPosition chessPosition;
+            try {
+                chessPosition = new ChessPosition(params[0]);
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+            var highlights = new ArrayList<ChessPosition>();
+            highlights.add(chessPosition);
+            for(var position : myGameData.game().validMoves(chessPosition))
+            {
+                highlights.add(position.getEndPosition());
+            }
+            printGame(myTeamColor,highlights);
+            return null;
+        }
+
+
+
         public String login(String... params) throws Exception {
         if(state != ClientState.LOGGED_OUT)
         {
@@ -210,6 +226,7 @@ public class Client {
         var gameName = (getStringParam("gameName", params, 0));
         myGameData = getGame(gameName);
         state = ClientState.OBSERVING;
+        myTeamColor = ChessGame.TeamColor.WHITE;
         printGame(ChessGame.TeamColor.WHITE, null);
         return String.format("Joined %s as observer", myGameData.gameName());
     }
@@ -243,12 +260,21 @@ public class Client {
                 ChessPiece curPiece = board.getPiece(curPos);
                 boolean isLight = (rowIndex + colIndex) % 2 == 1;
                 String background = isLight ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_DARK_GREEN;
+
                 String pieceString = " ";
                 if(curPiece!=null)
                 {
                     pieceString = (curPiece.getTeamColor()== ChessGame.TeamColor.WHITE
                             ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK) + curPiece;
 
+                }
+                for(var position : highlights)
+                {
+                    if(position == new ChessPosition(row, col))
+                    {
+                        background = SET_BG_COLOR_YELLOW;
+                        break;
+                    }
                 }
                 outputString.append(background).append(" ").append(pieceString).append(" ").append(RESET_TEXT_COLOR);
             }
