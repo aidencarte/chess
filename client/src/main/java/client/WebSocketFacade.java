@@ -16,9 +16,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import model.GameData;
 
+import model.GameData;
 
 public class WebSocketFacade extends Endpoint {
     Session session;
+    WebSocketResponseHandler responseHandler;
 
 
     private void sendMessage(String message)throws IOException
