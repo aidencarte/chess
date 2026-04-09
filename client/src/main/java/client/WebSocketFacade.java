@@ -14,6 +14,32 @@ import websocket.messages.ServerMessage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import model.GameData;
 
-public class WebSocketFacade {
+
+public class WebSocketFacade extends Endpoint {
+    Session session;
+
+
+    private void sendMessage(String message)throws IOException
+    {
+        session.getBasicRemote().sendText(message);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public void onOpen(Session session, EndpointConfig config) {
+
+    }
+
 }
