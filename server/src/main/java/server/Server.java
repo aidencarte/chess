@@ -16,10 +16,11 @@ public class Server {
             DataAccess dataAccess = new MySQLDataAccess();
             EndpointHandler endpointHandler = new EndpointHandler(dataAccess);
             endpointHandler.register(javalin);
-            javalin.exception(Exception.class, (e, context) -> exceptionHandler(new DataAccessException(500, e.getMessage()), context));
+            javalin.exception(Exception.class, (e, context) ->
+                    exceptionHandler(new DataAccessException(500, e.getMessage()), context));
             javalin.exception(DataAccessException.class, this::exceptionHandler);
         } catch (DataAccessException e) {
-            System.out.println("Something went wrong " + e.getMessage());
+            System.out.println("Something went wrong: " + e.getMessage());
         }
 
 

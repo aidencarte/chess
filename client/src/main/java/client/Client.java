@@ -85,6 +85,10 @@ public class Client {
             } catch (Exception e) {
                 return e.getMessage();
             }
+            if(myGameData.game().getBoard().getPiece(chessPosition) == null) {
+                printGame(myTeamColor,null);
+                return "";
+            }
             var highlights = new ArrayList<ChessPosition>();
             highlights.add(chessPosition);
             for(var position : myGameData.game().validMoves(chessPosition))
@@ -92,7 +96,7 @@ public class Client {
                 highlights.add(position.getEndPosition());
             }
             printGame(myTeamColor,highlights);
-            return null;
+            return "";
         }
 
 
@@ -311,12 +315,15 @@ public class Client {
                             ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK) + curPiece;
 
                 }
-                for(var position : highlights)
-                {
-                    if(position == new ChessPosition(row, col))
-                    {
-                        background = SET_BG_COLOR_YELLOW;
-                        break;
+                if(highlights!=null) {
+                    for (var position : highlights) {
+
+
+
+                        if (position.getColumn()==colIndex && position.getRow()==rowIndex) {
+                            background = SET_BG_COLOR_GREEN;
+                            break;
+                        }
                     }
                 }
                 outputString.append(background).append(" ").append(pieceString).append(" ").append(RESET_TEXT_COLOR);

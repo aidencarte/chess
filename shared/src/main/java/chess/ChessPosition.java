@@ -24,7 +24,7 @@ public class ChessPosition {
         notation = notation.toLowerCase(Locale.ROOT);
         if (notation.length() == 2) {
             col = notation.charAt(0) - 'a' + 1;
-            row = notation.charAt(1) - '1' + 1;
+            row = notation.charAt(1) - '1'+1;
             if (col >= 1 && col <= 8 && row >= 1 && row <= 8) {
                 return;
             }
