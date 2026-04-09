@@ -2,6 +2,7 @@ package client;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 
 import chess.ChessGame;
@@ -19,6 +20,7 @@ public class Client {
     private String authToken = null;
     private String username = null;
     private GameData myGameData = null;
+    private GameData[] games = null;
 
     private ChessGame.TeamColor myTeamColor = ChessGame.TeamColor.WHITE;
     public Client(String serverUrl) throws ResponseException {
@@ -132,20 +134,23 @@ public class Client {
 
     public String list() throws ResponseException {
         assertSignedIn();
-        var games = server.listGames(authToken);
+        games = server.listGames(authToken);
         if(games.length == 0)
         {
             return "No games are being played. Type create to be the first!";
         }
         var result = new StringBuilder();
+        var localID = 1;
         result.append("Games:\n");
         for (GameData game : games) {
-            result.append("_____________________________");
+            result.append("_____________________________\n");
             var gameName = game.gameName();
             var blackName = game.blackUsername()!=null ? game.blackUsername() : "Available";
             var whiteName = game.whiteUsername()!=null ? game.whiteUsername() : "Available";
-            String curGame = String.format("Game: %s\n White: %s\n Black: %s\n", gameName, whiteName, blackName);
+            String curGame = String.format("%d) Game: %s\n White: %s\n Black: %s\n",
+                    localID, gameName, whiteName, blackName);
             result.append(curGame);
+            localID++;
         }
         return result.toString();
     }
@@ -165,7 +170,19 @@ public class Client {
         {
             return "Must not be in game to join another";
         }
-        var game = getGame((getStringParam("gameName", params, 0)));
+        if(games==null)
+        {
+            return "Try listing games before joining";
+        }
+        var gameIDInput = getStringParam("gameID", params, 0);
+        var gameID = verifyGameIDInput(gameIDInput);
+        switch(gameID)
+        {
+            case -2: return "Invalid game id input";
+            case -1: return "Invalid game id";
+            default:
+        }
+        var game = games[gameID - 1];
         if(game == null)
         {
             return "Could not find that game";
@@ -203,11 +220,37 @@ public class Client {
         {
             throw new Exception("Already in game");
         }
-        var gameName = (getStringParam("gameName", params, 0));
-        myGameData = getGame(gameName);
+        if(games==null)
+        {
+            return "Try listing games before observing";
+        }
+        var inputGameID = getStringParam("gameID", params, 0);
+        var gameID = verifyGameIDInput(inputGameID);
+        switch(gameID)
+        {
+            case -2: return "Invalid game id input";
+            case -1: return "Invalid game id";
+            default:
+        }
+        myGameData = getGame(games[gameID - 1].gameName());
         state = ClientState.OBSERVING;
         printGame(ChessGame.TeamColor.WHITE, null);
         return String.format("Joined %s as observer", myGameData.gameName());
+    }
+
+    private String getGameString(String[] params) throws Exception {
+        var gameIDInput = getStringParam("gameID", params, 0);
+        var gameID = verifyGameIDInput(gameIDInput);
+        switch(gameID)
+        {
+            case -2:
+                return "Invalid game id input";
+            case -1:
+                return "Invalid game id";
+            default:
+        }
+        var game = getGame(games[gameID - 1].gameName());
+        return null;
     }
 
     public String redraw(String ... params) throws Exception
@@ -311,7 +354,7 @@ public class Client {
                     - logout
                     - create <Game Name>
                     - list
-                    - join  <GameID> <Color>
+                    - join  <game #> <Color>
                     - quit
                     """;
             case WHITE,BLACK:
@@ -340,5 +383,21 @@ public class Client {
             throw new Exception(String.format("Could not find %s", paramName));
         }
         return params[pos];
+    }
+    private int verifyGameIDInput(String gameIDInput){
+        var gameID = 0;
+        try
+        {
+            gameID = Integer.parseInt(gameIDInput);
+        }
+        catch (Exception e)
+        {
+            return -2;
+        }
+        if(gameID < 1 || gameID > games.length + 1)
+        {
+            return -1;
+        }
+        return gameID;
     }
 }

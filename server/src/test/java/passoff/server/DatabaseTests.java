@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class DatabaseTests {
+public class    DatabaseTests {
 
     private static final TestUser TEST_USER = new TestUser("ExistingUser", "existingUserPassword", "eu@mail.com");
 
