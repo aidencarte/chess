@@ -45,7 +45,7 @@ public class MySQLDataAccess implements DataAccess{
             try(PreparedStatement preparedStatement = conn.prepareStatement(statement))
             {
                 preparedStatement.setString(1, username);
-                try(ResultSet results = preparedStatement.executeQuery()){
+                try(var results = preparedStatement.executeQuery()){
                     if(results.next())
                     {
                         var password = results.getString("password");

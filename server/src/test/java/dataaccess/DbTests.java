@@ -6,10 +6,11 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Named;
 
-import java.util.UUID;
+
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class DbTests {
@@ -31,7 +32,7 @@ public abstract class DbTests {
     }
 
     protected UserData randomUser() {
-        var name = randomString();
+        var name = "randomUser";
         return new UserData(name, "too many secrets", name + "@byu.edu");
     }
 
@@ -61,7 +62,7 @@ public abstract class DbTests {
     @Test
     void testCreateAndRetrieveAuth() throws Exception {
         var user = randomUser();
-        db.createUser(new RegisterRequest(user.username(), user.password(), user.email()));
+        db.createUser(new RegisterRequest(user.username(),user.password(), user.email()));
 
         var auth = db.createAuth(user.username());
         assertNotNull(auth);
@@ -76,7 +77,7 @@ public abstract class DbTests {
     @Test
     void testClearDatabase() throws Exception {
         var user = randomUser();
-        db.createUser(new RegisterRequest(user.username(), user.password(), user.email()));
+        db.createUser(new RegisterRequest(user.username(),user.password(), user.email()));
         db.clear();
 
         assertNull(db.getUser(user.username()), "User should be removed after clear");
@@ -89,37 +90,32 @@ public abstract class DbTests {
     @Test
     void testCreateDuplicateUserFails() {
         var user = randomUser();
-        assertDoesNotThrow(() -> db.createUser(new RegisterRequest(user.username(), user.password(), user.email())));
+        assertDoesNotThrow(() -> db.createUser(new RegisterRequest(user.username(),user.password(), user.email())));
 
-        var ex = assertThrows(DataAccessException.class, () -> db.createUser(new RegisterRequest(user.username(),
-                user.password(), user.email())));
-        assertTrue(ex.getStatusCode() == 403||ex.getMessage().contains("duplicate"));
+        var ex = assertThrows(DataAccessException.class, () -> db.createUser(new RegisterRequest(user.username(),user.password(), user.email())));
+        assertTrue(ex.getMessage().contains("duplicate") || ex.getStatusCode() == 403);
     }
 
     @Test
     void testGetNonexistentUserReturnsNull() throws Exception {
-        var retrieved = db.getUser("nonexistent_user_" + randomString());
+        var retrieved = db.getUser("nonexistent_user_" + "nonsenese");
         assertNull(retrieved, "Should return null for non-existent user");
     }
 
     @Test
     void testGetNonexistentAuthReturnsNull() throws Exception {
-        var auth = db.getAuth("invalid_auth_" + randomString());
+        var auth = db.getAuth("invalid_auth_" + "nonsenser");
         assertNull(auth, "Should return null for non-existent auth token");
     }
 
     @Test
     void testDeleteAuthToken() throws Exception {
         var user = randomUser();
-        db.createUser(new RegisterRequest(user.username(), user.password(), user.email()));
+        db.createUser(new RegisterRequest(user.username(),user.password(), user.email()));
         var auth = db.createAuth(user.username());
 
         db.deleteAuth(auth.authToken());
         var retrieved = db.getAuth(auth.authToken());
         assertNull(retrieved, "Auth token should be deleted");
     }
-    public static String randomString() {
-        return UUID.randomUUID().toString().replace("-", "");
-    }
-
 }

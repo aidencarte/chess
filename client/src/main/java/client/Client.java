@@ -70,14 +70,18 @@ public class Client {
                 case "redraw" -> redraw();
                 case "help" -> help();
                 case "quit" -> "quit";
+                case "highlight" -> highlight(params);
                 default -> "Unknown Command";
             };
         } catch (Exception ex) {
             return ex.getMessage();
         }
     }
-
-    public String login(String... params) throws Exception {
+        public String highlight(String...params) throws Exception{
+        var chessPosition = new ChessPosition(params[0]);
+        return null;
+                }
+        public String login(String... params) throws Exception {
         if(state != ClientState.LOGGED_OUT)
         {
             return "You are not logged out";
