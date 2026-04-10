@@ -305,6 +305,7 @@ public class Client implements WebSocketResponseHandler{
             default:
         }
         myGameData = getGame(games[gameID - 1].gameName());
+        server.observeGame(authToken, myGameData.gameID());
         state = ClientState.OBSERVING;
         myTeamColor = ChessGame.TeamColor.WHITE;
         printGame(ChessGame.TeamColor.WHITE, null);

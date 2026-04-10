@@ -4,7 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import model.*;
-import service.WebSocketFacade;
+
 
 import java.io.IOException;
 import java.net.*;
@@ -80,12 +80,18 @@ public class ServerFacade {
         return handleResponse(response, GameData.class);
     }
 
-    public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor) throws ResponseException
+    public GameData joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor) throws Exception
     {
         var joinGameReq = new JoinGameRequest(teamColor, gameID);
         var request = buildRequest("PUT", "/game", joinGameReq, authToken);
         var response = sendRequest(request);
+        webSocket.connect(authToken,gameID);
         return handleResponse(response, GameData.class);
+    }
+
+    public void observeGame(String authToken, int gameID) throws Exception
+    {
+        webSocket.connect(authToken,gameID);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {

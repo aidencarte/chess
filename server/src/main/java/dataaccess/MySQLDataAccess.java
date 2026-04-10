@@ -69,12 +69,15 @@ public class MySQLDataAccess implements DataAccess{
         var game = new ChessGame();
         game.myBoard.resetBoard();
         var state = GameData.State.UNDECIDED;
-        var id = executeUpdate("INSERT INTO games (gameName, whitePlayerName, blackPlayerName, game, state) VALUES (?, ?, ?, ?, ?)",
+        var id = executeUpdate("INSERT INTO games (gameName, whitePlayerName, blackPlayerName, game," +
+                        " state, description) VALUES (?, ?, ?, ?, ?, ?)",
                 gameName,
                 null,
                 null,
                 game.toString(),
-                state.toString());
+                state.toString(),
+                "Game Created");
+
         if (id != 0) {
             return new GameData(id, null, null,
                     gameName, game, state, "created game");
@@ -88,7 +91,7 @@ public class MySQLDataAccess implements DataAccess{
         try(var conn = DatabaseManager.getConnection())
         {
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName, whitePlayerName, " +
-                    "blackPlayerName, game, state FROM games WHERE gameID=?"))
+                    "blackPlayerName, game, state, description FROM games WHERE gameID=?"))
             {
                 preparedStatement.setInt(1, gameID);
                 try(var results = preparedStatement.executeQuery()){
@@ -113,7 +116,7 @@ public class MySQLDataAccess implements DataAccess{
         var result = new ArrayList<GameData>();
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement("SELECT gameID, gameName," +
-                    " whitePlayerName, blackPlayerName, game, state FROM games"))
+                    " whitePlayerName, blackPlayerName, game, state, description FROM games"))
             {
                 try(var resultSet = preparedStatement.executeQuery())
                 {
@@ -133,13 +136,14 @@ public class MySQLDataAccess implements DataAccess{
     @Override
     public GameData updateGame(GameData game) throws DataAccessException {
         executeUpdate("UPDATE games set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
-                "game=?, state=? WHERE gameID=?",
+                "game=?, state=?, description=? WHERE gameID=?",
                 game.gameName(),
                 game.whiteUsername(),
                 game.blackUsername(),
                 game.toString(),
                 game.state().toString(),
-                game.gameID());
+                game.gameID(),
+                game.description());
         return game;
     }
 
@@ -247,7 +251,8 @@ public class MySQLDataAccess implements DataAccess{
         var blackPlayerName = results.getString("blackPlayerName");
         var game = gameFromString(gameString);
         var state = GameData.State.valueOf(results.getString("state"));
-        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state, "");
+        var description =  results.getString("description");
+        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state, description);
     }
 
     private ChessGame gameFromString(String gameString)
@@ -271,6 +276,7 @@ public class MySQLDataAccess implements DataAccess{
               `blackPlayerName` varchar(100) DEFAULT NULL,
               `game` longtext NOT NULL,
               `state` varchar(50) DEFAULT NULL,
+              `description` varchar(256) DEFAULT NULL,
               PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
