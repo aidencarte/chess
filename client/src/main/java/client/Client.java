@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
@@ -15,17 +16,17 @@ import ui.ClientState;
 
 import static ui.EscapeSequences.*;
 
-public class Client {
+public class Client implements WebSocketResponseHandler{
     private final ServerFacade server;
     private ClientState state = ClientState.LOGGED_OUT;
     private String authToken = null;
     private String username = null;
     private GameData myGameData = null;
     private GameData[] games = null;
-
     private ChessGame.TeamColor myTeamColor = ChessGame.TeamColor.WHITE;
-    public Client(String serverUrl) throws ResponseException {
-        server = new ServerFacade(serverUrl);
+
+    public Client(String serverUrl) throws Exception {
+        server = new ServerFacade(serverUrl, this);
     }
 
     public void run() {
@@ -72,12 +73,50 @@ public class Client {
                 case "help" -> help();
                 case "quit" -> "quit";
                 case "highlight" -> highlight(params);
+                case "move" -> makeMove(params);
+                case "leave" -> leaveGame();
+                case "resign" -> resign();
                 default -> "Unknown Command";
             };
         } catch (Exception ex) {
             return ex.getMessage();
         }
     }
+
+        public String makeMove(String[] params) throws Exception
+        {
+            if(state != ClientState.WHITE && state != ClientState.BLACK) {
+                return "Must be playing to make a move";
+            }
+            if(myGameData.game().getTeamTurn() != myTeamColor) {
+                return "Not your turn";
+            }
+            var pos1 = new ChessPosition(getStringParam("move start pos", params, 0));
+            var pos2 = new ChessPosition(getStringParam("move end pos", params, 1));
+            var move = new ChessMove(pos1, pos2, null);
+            server.makeMove(authToken, myGameData.gameID(),  move);
+            return String.format("moved %s - %s\n", pos1, pos2);
+        }
+
+        public String leaveGame() throws Exception
+        {
+            if(state != ClientState.WHITE && state != ClientState.BLACK && state != ClientState.OBSERVING) {
+                return "Must be in game to leave";
+            }
+            server.leave(authToken, myGameData.gameID());
+            state = ClientState.LOGGED_IN;
+            myGameData = null;
+            myTeamColor = ChessGame.TeamColor.WHITE;
+            return "Left game";
+        }
+
+        public String resign() throws Exception
+        {
+            if(state != ClientState.WHITE && state != ClientState.BLACK) {
+                return "Must be in game to resign";
+            }
+
+        }
         public String highlight(String...params) throws Exception {
             ChessPosition chessPosition;
             try {
@@ -437,4 +476,17 @@ public class Client {
         }
         return gameID;
     }
+
+    @Override
+    public void notify(String message) {
+        System.out.printf("%n%s[NOTIFICATION] %s%s%n", SET_TEXT_COLOR_BLUE, message, RESET_TEXT_COLOR);
+        printPrompt();
+    }
+
+    public void loadGame(GameData gameData) {
+        myGameData = gameData;
+        printGame(myTeamColor,null);
+        printPrompt();
+    }
+
 }

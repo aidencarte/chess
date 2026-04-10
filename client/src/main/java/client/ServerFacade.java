@@ -1,9 +1,12 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import model.*;
+import service.WebSocketFacade;
 
+import java.io.IOException;
 import java.net.*;
 import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -17,20 +20,30 @@ import java.util.Map;
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
+    private final WebSocketFacade webSocket;
 
-    public ServerFacade(String url) {
+    public ServerFacade(String url, WebSocketResponseHandler responseHandler)throws Exception{
         serverUrl = url;
+        webSocket=new WebSocketFacade(url, responseHandler);
     }
 
     public RegisterResult register(RegisterRequest registerRequest) throws ResponseException {
         var request = buildRequest("POST", "/user", registerRequest, null);
         var response = sendRequest(request);
-        return handleResponse(response, RegisterResult.class);
+        return handleResponse( response, RegisterResult.class);
     }
 
     public void clearDb() throws ResponseException {
         var request = buildRequest("DELETE", "/db", null, null);
         var response = sendRequest(request);
+    }
+
+    public void leave(String authToken, int gameID) throws Exception {
+        webSocket.leave(authToken, gameID);
+    }
+
+    public void makeMove(String authToken, int gameID, ChessMove chessMove) throws Exception {
+        webSocket.makeMove(authToken,gameID,chessMove);
     }
 
 
@@ -57,7 +70,8 @@ public class ServerFacade {
 
     public GameData createGame(String gameName, String authToken) throws ResponseException
     {
-        var newGame = new GameData(0, null, null, gameName, null, null);
+        var newGame = new GameData(0, null, null, gameName, null, null,
+                "game created");
         var request = buildRequest("POST", "/game", newGame, authToken);
         var response = sendRequest(request);
         return handleResponse(response, GameData.class);
