@@ -40,7 +40,8 @@ public class MemoryDataAccess implements  DataAccess{
 
     public GameData createGame(String gameName) {
         var gameID = nextGameID++;
-        var newGame = new GameData(gameID, null, null, gameName, new ChessGame(), GameData.State.UNDECIDED);
+        var newGame = new GameData(gameID, null, null, gameName, new ChessGame(),
+                GameData.State.UNDECIDED, "created game");
         games.put(newGame.gameID(), newGame);
         return newGame;
     }

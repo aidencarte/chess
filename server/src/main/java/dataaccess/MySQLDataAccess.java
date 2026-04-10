@@ -76,7 +76,8 @@ public class MySQLDataAccess implements DataAccess{
                 game.toString(),
                 state.toString());
         if (id != 0) {
-            return new GameData(id, null, null, gameName, game, state);
+            return new GameData(id, null, null,
+                    gameName, game, state, "created game");
         }
         return null;
     }
@@ -246,7 +247,7 @@ public class MySQLDataAccess implements DataAccess{
         var blackPlayerName = results.getString("blackPlayerName");
         var game = gameFromString(gameString);
         var state = GameData.State.valueOf(results.getString("state"));
-        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state);
+        return new GameData(gameID, whitePlayerName, blackPlayerName, gameName, game, state, "");
     }
 
     private ChessGame gameFromString(String gameString)

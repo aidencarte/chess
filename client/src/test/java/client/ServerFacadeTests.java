@@ -22,11 +22,11 @@ public class ServerFacadeTests {
     private String existingAuth;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws Exception{
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade("http://localhost:" + Integer.toString(port));
+        facade = new ServerFacade("http://localhost:" + Integer.toString(port), null);
         existingUser = new RegisterRequest("ExistingUser", "existingUserPassword", "eu@mail.com");
         newUser = new RegisterRequest("NewUser", "newUserPassword", "nu@mail.com");
         createRequest = "testGame";

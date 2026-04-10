@@ -41,6 +41,9 @@ public class ServerFacade {
     public void leave(String authToken, int gameID) throws Exception {
         webSocket.leave(authToken, gameID);
     }
+    public void resign(String authToken, int gameID) throws Exception{
+        webSocket.resign(authToken, gameID);
+    }
 
     public void makeMove(String authToken, int gameID, ChessMove chessMove) throws Exception {
         webSocket.makeMove(authToken,gameID,chessMove);

@@ -1,4 +1,4 @@
-package service;
+package client;
 
 import chess.ChessMove;
 import client.WebSocketResponseHandler;

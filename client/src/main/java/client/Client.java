@@ -115,6 +115,15 @@ public class Client implements WebSocketResponseHandler{
             if(state != ClientState.WHITE && state != ClientState.BLACK) {
                 return "Must be in game to resign";
             }
+            System.out.print("\n Are you sure you want to resign? (Y/N)?");
+            Scanner scanner = new Scanner(System.in);
+            String answer = scanner.nextLine();
+            if(answer.equalsIgnoreCase("Y")) {
+                server.resign(authToken, myGameData.gameID());
+                return "Resigned";
+            }
+            return "Did not resign";
+
 
         }
         public String highlight(String...params) throws Exception {
