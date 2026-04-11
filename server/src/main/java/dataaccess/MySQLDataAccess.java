@@ -134,18 +134,17 @@ public class MySQLDataAccess implements DataAccess{
     }
 
     @Override
-    public GameData updateGame(GameData game) throws DataAccessException {
-        executeUpdate("UPDATE games set gameName=?, whitePlayerName=?, blackPlayerName=?, " +
-                "game=?, state=?, description=? WHERE gameID=?",
-                game.gameName(),
-                game.whiteUsername(),
-                game.blackUsername(),
-                game.toString(),
-                game.state().toString(),
-                game.description(),
-                game.gameID());
+    public GameData updateGame(GameData gameData) throws DataAccessException {
+        executeUpdate("UPDATE games set gameName=?, whitePlayerName=?, blackPlayerName=?, game=?, state=?, description=? WHERE gameID=?",
+                gameData.gameName(),
+                gameData.whiteUsername(),
+                gameData.blackUsername(),
+                gameData.game().toString(),
+                gameData.state().toString(),
+                gameData.description(),
+                gameData.gameID());
 
-        return game;
+        return gameData;
     }
 
     @Override

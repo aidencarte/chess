@@ -8,7 +8,12 @@ public class ErrorMessage extends ServerMessage {
 
     public ErrorMessage(String errorMessage) {
         super(ServerMessageType.ERROR);
-        this.errorMessage = errorMessage;
+        if(errorMessage == null) {
+            this.errorMessage = "Unable to load error";
+        }
+        else {
+            this.errorMessage = errorMessage;
+        }
     }
 
     public String getErrorMessage() {
