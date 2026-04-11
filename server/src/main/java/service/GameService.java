@@ -139,7 +139,7 @@ public class GameService extends Service {
             }
             return gameData;
         } catch (DataAccessException ex) {
-            throw new DataAccessException(500, "Server error");
+            throw new DataAccessException(500, "Get Game Server error");
         }
     }
 

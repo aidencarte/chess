@@ -1,22 +1,22 @@
-package client;
+package ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Scanner;
 
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import com.google.gson.Gson;
+import client.ResponseException;
+import client.ServerFacade;
+import client.WebSocketResponseHandler;
 import model.*;
-import ui.ClientState;
 
 import static ui.EscapeSequences.*;
 
-public class Client implements WebSocketResponseHandler{
+public class Client implements WebSocketResponseHandler {
     private final ServerFacade server;
     private ClientState state = ClientState.LOGGED_OUT;
     private String authToken = null;
@@ -52,7 +52,8 @@ public class Client implements WebSocketResponseHandler{
 
 
     private void printPrompt() {
-        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_BLUE);
+
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_BLUE + RESET_TEXT_COLOR);
     }
 
 
