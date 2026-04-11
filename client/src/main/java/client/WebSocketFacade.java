@@ -1,7 +1,6 @@
 package client;
 
 import chess.ChessMove;
-import client.WebSocketResponseHandler;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import model.GameData;
@@ -38,14 +37,12 @@ public class WebSocketFacade extends Endpoint {
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, socketURI);
 
-        this.session.addMessageHandler(new jakarta.websocket.MessageHandler.Whole<String>() {
-            public void onMessage(String messageText) {
-                ServerMessage message = new Gson().fromJson(messageText, ServerMessage.class);
-                switch (message.getServerMessageType()) {
-                    case LOAD_GAME -> loadGame(new Gson().fromJson(messageText, LoadMessage.class));
-                    case ERROR -> error(new Gson().fromJson(messageText, ErrorMessage.class));
-                    case NOTIFICATION -> notification(new Gson().fromJson(messageText, NotificationMessage.class));
-                }
+        this.session.addMessageHandler((MessageHandler.Whole<String>) messageText -> {
+            ServerMessage message = new Gson().fromJson(messageText, ServerMessage.class);
+            switch (message.getServerMessageType()) {
+                case LOAD_GAME -> loadGame(new Gson().fromJson(messageText, LoadMessage.class));
+                case ERROR -> error(new Gson().fromJson(messageText, ErrorMessage.class));
+                case NOTIFICATION -> notification(new Gson().fromJson(messageText, NotificationMessage.class));
             }
         });
     }
@@ -77,6 +74,7 @@ public class WebSocketFacade extends Endpoint {
 
 
     private void loadGame(LoadMessage message) {
+
         responseHandler.loadGame(message.gameData);
     }
 

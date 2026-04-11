@@ -80,7 +80,7 @@ public class MySQLDataAccess implements DataAccess{
 
         if (id != 0) {
             return new GameData(id, null, null,
-                    gameName, game, state, "created game");
+                    gameName, game, state, "Game Created");
         }
         return null;
     }
@@ -142,8 +142,9 @@ public class MySQLDataAccess implements DataAccess{
                 game.blackUsername(),
                 game.toString(),
                 game.state().toString(),
-                game.gameID(),
-                game.description());
+                game.description(),
+                game.gameID());
+
         return game;
     }
 

@@ -93,7 +93,7 @@ public abstract class DbTests {
         assertDoesNotThrow(() -> db.createUser(new RegisterRequest(user.username(),user.password(), user.email())));
 
         var ex = assertThrows(DataAccessException.class, () -> db.createUser(new RegisterRequest(user.username(),user.password(), user.email())));
-        assertTrue(ex.getMessage().contains("duplicate") || ex.getStatusCode() == 403);
+        assertTrue(ex.getStatusCode() == 403 || ex.getMessage().contains("duplicate") );
     }
 
     @Test
